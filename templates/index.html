@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Commercia AI</title>
+<style>
+body{margin:0;background:#0b0e13;color:white;font-family:-apple-system,Arial}
+main{max-width:700px;margin:auto;padding:25px}
+.logo{font-size:22px;font-weight:900}.logo span{color:#82efc5}
+.badge{display:inline-block;margin-top:40px;background:#82efc5;color:#07110d;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold}
+h1{font-size:42px;line-height:1;margin:15px 0}
+p{color:#aaa;line-height:1.5}
+.card{background:#141922;border:1px solid #29313d;border-radius:18px;padding:20px;margin-top:25px}
+label{display:block;font-size:13px;margin:15px 0 6px}
+input,textarea{box-sizing:border-box;width:100%;padding:12px;background:#0c1016;border:1px solid #343d49;border-radius:10px;color:white;font-size:16px}
+textarea{min-height:75px}
+button{width:100%;padding:15px;margin-top:20px;border:0;border-radius:11px;background:#82efc5;color:#07110d;font-size:16px;font-weight:900}
+#result{white-space:pre-wrap;line-height:1.55}
+.error{color:#ff9d9d}
+</style>
+</head>
+
+<body>
+<main>
+
+<div class="logo">Commercia<span>AI</span></div>
+
+<div class="badge">COMPTE PILOTE</div>
+
+<h1>Ton community manager automatique.</h1>
+
+<p>
+Commercia AI analyse ton commerce et crée automatiquement
+ta campagne Instagram.
+</p>
+
+<div class="card">
+
+<label>Entreprise</label>
+<input id="business" value="Sur un Plateau">
+
+<label>Activité</label>
+<input id="activity" value="Plateaux de fruits raffinés et événementiel">
+
+<label>Zone</label>
+<input id="location" value="Paris & Île-de-France">
+
+<label>Positionnement</label>
+<input id="positioning" value="Premium, artisanal, frais et élégant">
+
+<label>Clientèle</label>
+<input id="audience" value="Particuliers et entreprises">
+
+<label>Offre</label>
+<textarea id="offer">Créations de fruits frais sur commande, plateaux raffinés et prestations événementielles.</textarea>
+
+<label>Objectif</label>
+<textarea id="objective">Augmenter la visibilité Instagram et obtenir davantage de commandes par message privé.</textarea>
+
+<label>Instructions</label>
+<textarea id="notes">Univers très visuel, fruits colorés, créations premium et Reels courts.</textarea>
+
+<button onclick="generate()" id="btn">
+✨ Générer ma semaine avec l'IA
+</button>
+
+</div>
+
+<div class="card">
+<h2>Campagne Commercia AI</h2>
+<div id="result">Ta campagne apparaîtra ici.</div>
+</div>
+
+</main>
+
+<script>
+async function generate(){
+
+const btn=document.getElementById("btn");
+const result=document.getElementById("result");
+
+btn.disabled=true;
+btn.innerText="Commercia AI travaille...";
+result.innerText="Analyse de Sur un Plateau et création de la campagne...";
+
+const ids=[
+"business","activity","location","positioning",
+"audience","offer","objective","notes"
+];
+
+let data={};
+
+ids.forEach(id=>{
+data[id]=document.getElementById(id).value;
+});
+
+try{
+
+const response=await fetch("/api/generate",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify(data)
+});
+
+const json=await response.json();
+
+if(!response.ok){
+throw new Error(json.error || "Erreur");
+}
+
+result.innerText=JSON.stringify(json.result,null,2);
+
+}catch(e){
+
+result.innerHTML=
+'<span class="error">'+e.message+'</span>';
+
+}
+
+btn.disabled=false;
+btn.innerText="✨ Générer une nouvelle campagne";
+
+}
+</script>
+
+</body>
+</html>
