@@ -6,6 +6,7 @@ from openai import OpenAI
 
 load_dotenv()
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 32 * 1024
 
 SYSTEM = """Tu es Commercia AI, un community manager expert pour commerces de proximité.
 Tu crées des contenus concrets, commerciaux, élégants, non génériques et immédiatement publiables.
@@ -35,7 +36,9 @@ def generate():
             "error": "OPENAI_API_KEY manquante. Ajoute-la dans le fichier .env puis redémarre l'application."
         }), 400
 
-    data = request.get_json(force=True)
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({"error": "Requête JSON invalide."}), 400
     business = data.get("business", "Sur un Plateau")
     activity = data.get("activity", "Plateaux de fruits raffinés et événementiel")
     location = data.get("location", "Paris & Île-de-France")
@@ -74,8 +77,16 @@ Les hashtags doivent être crédibles et peu spammy.
         raw = response.output_text
         result = json.loads(raw)
         return jsonify({"ok": True, "result": result})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except json.JSONDecodeError:
+        app.logger.exception("La réponse OpenAI n'est pas un JSON valide")
+        return jsonify({"error": "L'IA a renvoyé une réponse invalide. Réessaie dans quelques instants."}), 502
+    except Exception:
+        app.logger.exception("Échec de génération OpenAI")
+        return jsonify({"error": "La génération a échoué. Vérifie la clé API et réessaie."}), 502
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 5000)),
+        debug=os.getenv("FLASK_DEBUG") == "1",
+    )

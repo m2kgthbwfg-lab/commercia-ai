@@ -24,6 +24,20 @@ Cette version appelle réellement l'API OpenAI depuis le serveur.
 Ne mets jamais ta clé API dans le HTML ou dans un dépôt Git public.
 Le fichier `.env` reste uniquement côté serveur.
 
+## Mise en ligne
+
+Le dépôt contient un fichier `render.yaml` prêt pour Render. Après connexion du
+dépôt, renseigne `OPENAI_API_KEY` dans les variables d'environnement du service.
+Le serveur démarre avec Gunicorn et Render vérifie automatiquement `/health`.
+
+## Tests
+
+    pip install -r requirements.txt pytest
+    pytest -q
+
+GitHub Actions relance ces tests à chaque pull request et à chaque changement
+sur `main`.
+
 ## Ce que fait la version
 - Profil Sur un Plateau prérempli
 - Appel réel à OpenAI Responses API
