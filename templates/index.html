@@ -2,127 +2,73 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0e13">
 <title>Commercia AI</title>
 <style>
-body{margin:0;background:#0b0e13;color:white;font-family:-apple-system,Arial}
-main{max-width:700px;margin:auto;padding:25px}
-.logo{font-size:22px;font-weight:900}.logo span{color:#82efc5}
-.badge{display:inline-block;margin-top:40px;background:#82efc5;color:#07110d;padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold}
-h1{font-size:42px;line-height:1;margin:15px 0}
-p{color:#aaa;line-height:1.5}
-.card{background:#141922;border:1px solid #29313d;border-radius:18px;padding:20px;margin-top:25px}
-label{display:block;font-size:13px;margin:15px 0 6px}
-input,textarea{box-sizing:border-box;width:100%;padding:12px;background:#0c1016;border:1px solid #343d49;border-radius:10px;color:white;font-size:16px}
-textarea{min-height:75px}
-button{width:100%;padding:15px;margin-top:20px;border:0;border-radius:11px;background:#82efc5;color:#07110d;font-size:16px;font-weight:900}
-#result{white-space:pre-wrap;line-height:1.55}
-.error{color:#ff9d9d}
+:root{--bg:#0b0e13;--surface:#141922;--surface2:#0e131a;--line:#29313d;--text:#f7f9fb;--muted:#aab2bd;--accent:#82efc5;--accent2:#b7ffe4;--danger:#ff9d9d}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 90% 0,#14211d 0,transparent 32rem),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:760px;margin:auto;padding:24px 18px 70px}.logo{font-size:23px;font-weight:900;letter-spacing:-.5px}.logo span{color:var(--accent)}.badge{display:inline-flex;margin-top:42px;background:var(--accent);color:#07110d;padding:7px 11px;border-radius:30px;font-size:11px;font-weight:900;letter-spacing:.7px}h1{font-size:clamp(38px,10vw,58px);line-height:.98;letter-spacing:-2px;margin:17px 0 14px;max-width:650px}h2{font-size:25px;margin:0}h3{font-size:18px;margin:0 0 12px}.intro{color:var(--muted);line-height:1.55;font-size:17px;max-width:580px}.card{background:rgba(20,25,34,.96);border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:24px;box-shadow:0 18px 55px rgba(0,0,0,.18)}label{display:block;font-size:13px;font-weight:750;margin:16px 0 7px;color:#d9dfe6}input,textarea{width:100%;padding:13px 14px;background:#0c1016;border:1px solid #343d49;border-radius:11px;color:white;font:inherit;font-size:16px;outline:none}input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(130,239,197,.12)}textarea{min-height:82px;resize:vertical}button{width:100%;padding:16px;margin-top:21px;border:0;border-radius:12px;background:var(--accent);color:#07110d;font-size:16px;font-weight:900;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.result-shell{padding:0;background:transparent;border:0;box-shadow:none}.result-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:36px 2px 14px}.result-head small{color:var(--accent);font-weight:800}.empty,.loading{background:var(--surface);border:1px dashed #3a4655;border-radius:18px;padding:26px 20px;color:var(--muted);text-align:center;line-height:1.5}.loading:before{content:"";display:block;width:30px;height:30px;margin:0 auto 14px;border:3px solid #324039;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.section{margin-top:25px}.section-title{display:flex;align-items:center;gap:10px;margin:0 2px 12px;font-size:21px}.icon{display:grid;place-items:center;width:34px;height:34px;background:rgba(130,239,197,.12);border:1px solid rgba(130,239,197,.24);border-radius:10px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.output-card{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px;overflow-wrap:anywhere}.output-card p{margin:8px 0 0;color:#d9dee5;line-height:1.55;white-space:pre-wrap}.output-card strong{color:white}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.8px;font-weight:900;text-transform:uppercase;margin-bottom:7px}.pill{display:inline-block;color:var(--accent2);background:rgba(130,239,197,.09);border:1px solid rgba(130,239,197,.18);padding:5px 9px;border-radius:20px;font-size:12px;font-weight:750;margin:9px 5px 0 0}.meta{display:grid;gap:8px;margin-top:13px}.meta div{padding-top:9px;border-top:1px solid #27303b;color:#c8d0d8;line-height:1.45}.meta b{display:block;color:#88939f;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.summary{border-color:rgba(130,239,197,.36);background:linear-gradient(135deg,rgba(130,239,197,.1),var(--surface) 50%)}.error{background:#29191c;border:1px solid #66343b;color:var(--danger);border-radius:15px;padding:18px;line-height:1.5}.hashtags{color:#8eddbf!important}.calendar-day{display:flex;gap:13px}.day-number{flex:0 0 40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--accent);color:#07110d;font-weight:950}.offer{background:linear-gradient(145deg,#18352c,var(--surface));border-color:#315d4e}.footer-note{text-align:center;color:#6f7985;font-size:12px;margin:30px 0}
+@media(min-width:620px){main{padding:34px 28px 80px}.card{padding:26px}.grid.two{grid-template-columns:repeat(2,1fr)}.calendar-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-
 <body>
 <main>
-
 <div class="logo">Commercia<span>AI</span></div>
-
 <div class="badge">COMPTE PILOTE</div>
-
 <h1>Ton community manager automatique.</h1>
-
-<p>
-Commercia AI analyse ton commerce et crée automatiquement
-ta campagne Instagram.
-</p>
+<p class="intro">Commercia AI analyse ton commerce et crée automatiquement ta campagne Instagram prête à publier.</p>
 
 <div class="card">
-
-<label>Entreprise</label>
-<input id="business" value="Sur un Plateau">
-
-<label>Activité</label>
-<input id="activity" value="Plateaux de fruits raffinés et événementiel">
-
-<label>Zone</label>
-<input id="location" value="Paris & Île-de-France">
-
-<label>Positionnement</label>
-<input id="positioning" value="Premium, artisanal, frais et élégant">
-
-<label>Clientèle</label>
-<input id="audience" value="Particuliers et entreprises">
-
-<label>Offre</label>
-<textarea id="offer">Créations de fruits frais sur commande, plateaux raffinés et prestations événementielles.</textarea>
-
-<label>Objectif</label>
-<textarea id="objective">Augmenter la visibilité Instagram et obtenir davantage de commandes par message privé.</textarea>
-
-<label>Instructions</label>
-<textarea id="notes">Univers très visuel, fruits colorés, créations premium et Reels courts.</textarea>
-
-<button onclick="generate()" id="btn">
-✨ Générer ma semaine avec l'IA
-</button>
-
+<label for="business">Entreprise</label><input id="business" value="Sur un Plateau">
+<label for="activity">Activité</label><input id="activity" value="Plateaux de fruits raffinés et événementiel">
+<label for="location">Zone</label><input id="location" value="Paris & Île-de-France">
+<label for="positioning">Positionnement</label><input id="positioning" value="Premium, artisanal, frais et élégant">
+<label for="audience">Clientèle</label><input id="audience" value="Particuliers et entreprises">
+<label for="offer">Offre</label><textarea id="offer">Créations de fruits frais sur commande, plateaux raffinés et prestations événementielles.</textarea>
+<label for="objective">Objectif</label><textarea id="objective">Augmenter la visibilité Instagram et obtenir davantage de commandes par message privé.</textarea>
+<label for="notes">Instructions</label><textarea id="notes">Univers très visuel, fruits colorés, créations premium et Reels courts.</textarea>
+<button type="button" onclick="generate()" id="btn">✨ Générer ma semaine avec l'IA</button>
 </div>
 
-<div class="card">
-<h2>Campagne Commercia AI</h2>
-<div id="result">Ta campagne apparaîtra ici.</div>
-</div>
-
+<section class="result-shell" aria-live="polite">
+<div class="result-head"><h2>Ta campagne</h2><small>PRÊTE À PUBLIER</small></div>
+<div id="result" class="empty">Ta campagne personnalisée apparaîtra ici.</div>
+</section>
+<div class="footer-note">Commercia AI · Création de contenu assistée par IA</div>
 </main>
 
 <script>
+const escapeHtml=value=>String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
+const text=value=>escapeHtml(Array.isArray(value)?value.join(" · "):value);
+const meta=(label,value)=>value?`<div><b>${escapeHtml(label)}</b>${text(value)}</div>`:"";
+const section=(icon,title,content)=>content?`<section class="section"><h3 class="section-title"><span class="icon">${icon}</span>${escapeHtml(title)}</h3>${content}</section>`:"";
+
+function renderCampaign(data){
+  const posts=(data.posts||[]).map((item,i)=>`<article class="output-card"><div class="eyebrow">Publication ${i+1}</div><h3>${text(item.title)}</h3><p>${text(item.caption)}</p><p class="hashtags">${text(item.hashtags)}</p><div class="meta">${meta("Appel à l'action",item.cta)}</div></article>`).join("");
+  const reels=(data.reels||[]).map((item,i)=>`<article class="output-card"><div class="eyebrow">Reel ${i+1}</div><h3>${text(item.title)}</h3><div class="meta">${meta("Accroche",item.hook)}${meta("Plans à filmer",item.shots)}${meta("Texte à l'écran",item.overlay_text)}${meta("Légende",item.caption)}</div></article>`).join("");
+  const stories=(data.stories||[]).map((item,i)=>`<article class="output-card"><div class="eyebrow">Story ${i+1}</div><h3>${text(item.title)}</h3><p>${text(item.content)}</p><div class="meta">${meta("Interaction",item.interaction)}</div></article>`).join("");
+  const calendar=(data.calendar||[]).map((item,i)=>`<article class="output-card calendar-day"><div class="day-number">${i+1}</div><div><div class="eyebrow">${text(item.day)}</div><h3>${text(item.content_type)}</h3><p>${text(item.topic)}</p><span class="pill">${text(item.goal)}</span></div></article>`).join("");
+  const offer=data.commercial_offer||{};
+  const offerCard=(offer.headline||offer.body||offer.cta)?`<article class="output-card offer"><div class="eyebrow">Offre prête à diffuser</div><h3>${text(offer.headline)}</h3><p>${text(offer.body)}</p>${offer.cta?`<span class="pill">${text(offer.cta)}</span>`:""}</article>`:"";
+  return `${data.summary?`<article class="output-card summary"><div class="eyebrow">Vision de la campagne</div><p>${text(data.summary)}</p></article>`:""}${section("📅","Calendrier de la semaine",`<div class="grid calendar-grid">${calendar}</div>`)}${section("✦","Publications Instagram",`<div class="grid">${posts}</div>`)}${section("▶","Reels",`<div class="grid two">${reels}</div>`)}${section("◉","Stories",`<div class="grid two">${stories}</div>`)}${section("€","Offre commerciale",offerCard)}${section("★","Réponse à un avis Google",data.review_reply?`<article class="output-card"><p>${text(data.review_reply)}</p></article>`:"")}`;
+}
+
 async function generate(){
-
-const btn=document.getElementById("btn");
-const result=document.getElementById("result");
-
-btn.disabled=true;
-btn.innerText="Commercia AI travaille...";
-result.innerText="Analyse de Sur un Plateau et création de la campagne...";
-
-const ids=[
-"business","activity","location","positioning",
-"audience","offer","objective","notes"
-];
-
-let data={};
-
-ids.forEach(id=>{
-data[id]=document.getElementById(id).value;
-});
-
-try{
-
-const response=await fetch("/api/generate",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify(data)
-});
-
-const json=await response.json();
-
-if(!response.ok){
-throw new Error(json.error || "Erreur");
-}
-
-result.innerText=JSON.stringify(json.result,null,2);
-
-}catch(e){
-
-result.innerHTML=
-'<span class="error">'+e.message+'</span>';
-
-}
-
-btn.disabled=false;
-btn.innerText="✨ Générer une nouvelle campagne";
-
+  const btn=document.getElementById("btn");
+  const result=document.getElementById("result");
+  btn.disabled=true;btn.textContent="Commercia AI travaille...";
+  result.className="loading";result.textContent="Analyse du commerce et création de la campagne…";
+  const ids=["business","activity","location","positioning","audience","offer","objective","notes"];
+  const data=Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value.trim()]));
+  try{
+    const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
+    const json=await response.json();
+    if(!response.ok)throw new Error(json.error||"Une erreur est survenue.");
+    result.className="";result.innerHTML=renderCampaign(json.result||{});
+    result.scrollIntoView({behavior:"smooth",block:"start"});
+  }catch(error){result.className="error";result.textContent=error.message||"La génération a échoué. Réessaie."}
+  finally{btn.disabled=false;btn.textContent="✨ Générer une nouvelle campagne"}
 }
 </script>
-
 </body>
 </html>
