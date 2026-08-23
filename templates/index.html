@@ -7,7 +7,7 @@
 <title>Commercia AI</title>
 <style>
 :root{--bg:#0b0e13;--surface:#141922;--surface2:#0e131a;--line:#29313d;--text:#f7f9fb;--muted:#aab2bd;--accent:#82efc5;--accent2:#b7ffe4;--danger:#ff9d9d}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 90% 0,#14211d 0,transparent 32rem),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:760px;margin:auto;padding:24px 18px 70px}.logo{font-size:23px;font-weight:900;letter-spacing:-.5px}.logo span{color:var(--accent)}.badge{display:inline-flex;margin-top:42px;background:var(--accent);color:#07110d;padding:7px 11px;border-radius:30px;font-size:11px;font-weight:900;letter-spacing:.7px}h1{font-size:clamp(38px,10vw,58px);line-height:.98;letter-spacing:-2px;margin:17px 0 14px;max-width:650px}h2{font-size:25px;margin:0}h3{font-size:18px;margin:0 0 12px}.intro{color:var(--muted);line-height:1.55;font-size:17px;max-width:580px}.card{background:rgba(20,25,34,.96);border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:24px;box-shadow:0 18px 55px rgba(0,0,0,.18)}label{display:block;font-size:13px;font-weight:750;margin:16px 0 7px;color:#d9dfe6}input,textarea{width:100%;padding:13px 14px;background:#0c1016;border:1px solid #343d49;border-radius:11px;color:white;font:inherit;font-size:16px;outline:none}input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(130,239,197,.12)}textarea{min-height:82px;resize:vertical}button{width:100%;padding:16px;margin-top:21px;border:0;border-radius:12px;background:var(--accent);color:#07110d;font-size:16px;font-weight:900;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.result-shell{padding:0;background:transparent;border:0;box-shadow:none}.result-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:36px 2px 14px}.result-head small{color:var(--accent);font-weight:800}.empty,.loading{background:var(--surface);border:1px dashed #3a4655;border-radius:18px;padding:26px 20px;color:var(--muted);text-align:center;line-height:1.5}.loading:before{content:"";display:block;width:30px;height:30px;margin:0 auto 14px;border:3px solid #324039;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.section{margin-top:25px}.section-title{display:flex;align-items:center;gap:10px;margin:0 2px 12px;font-size:21px}.icon{display:grid;place-items:center;width:34px;height:34px;background:rgba(130,239,197,.12);border:1px solid rgba(130,239,197,.24);border-radius:10px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.output-card{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px;overflow-wrap:anywhere}.output-card p{margin:8px 0 0;color:#d9dee5;line-height:1.55;white-space:pre-wrap}.output-card strong{color:white}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.8px;font-weight:900;text-transform:uppercase;margin-bottom:7px}.pill{display:inline-block;color:var(--accent2);background:rgba(130,239,197,.09);border:1px solid rgba(130,239,197,.18);padding:5px 9px;border-radius:20px;font-size:12px;font-weight:750;margin:9px 5px 0 0}.meta{display:grid;gap:8px;margin-top:13px}.meta div{padding-top:9px;border-top:1px solid #27303b;color:#c8d0d8;line-height:1.45}.meta b{display:block;color:#88939f;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.summary{border-color:rgba(130,239,197,.36);background:linear-gradient(135deg,rgba(130,239,197,.1),var(--surface) 50%)}.error{background:#29191c;border:1px solid #66343b;color:var(--danger);border-radius:15px;padding:18px;line-height:1.5}.hashtags{color:#8eddbf!important}.calendar-day{display:flex;gap:13px}.day-number{flex:0 0 40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--accent);color:#07110d;font-weight:950}.offer{background:linear-gradient(145deg,#18352c,var(--surface));border-color:#315d4e}.footer-note{text-align:center;color:#6f7985;font-size:12px;margin:30px 0}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 90% 0,#14211d 0,transparent 32rem),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:760px;margin:auto;padding:24px 18px 70px}.logo{font-size:23px;font-weight:900;letter-spacing:-.5px}.logo span{color:var(--accent)}.badge{display:inline-flex;margin-top:42px;background:var(--accent);color:#07110d;padding:7px 11px;border-radius:30px;font-size:11px;font-weight:900;letter-spacing:.7px}h1{font-size:clamp(38px,10vw,58px);line-height:.98;letter-spacing:-2px;margin:17px 0 14px;max-width:650px}h2{font-size:25px;margin:0}h3{font-size:18px;margin:0 0 12px}.intro{color:var(--muted);line-height:1.55;font-size:17px;max-width:580px}.card{background:rgba(20,25,34,.96);border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:24px;box-shadow:0 18px 55px rgba(0,0,0,.18)}label{display:block;font-size:13px;font-weight:750;margin:16px 0 7px;color:#d9dfe6}input,textarea{width:100%;padding:13px 14px;background:#0c1016;border:1px solid #343d49;border-radius:11px;color:white;font:inherit;font-size:16px;outline:none}input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(130,239,197,.12)}textarea{min-height:82px;resize:vertical}button{width:100%;padding:16px;margin-top:21px;border:0;border-radius:12px;background:var(--accent);color:#07110d;font-size:16px;font-weight:900;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.result-shell{padding:0;background:transparent;border:0;box-shadow:none}.result-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:36px 2px 14px}.result-head small{color:var(--accent);font-weight:800}.empty,.loading{background:var(--surface);border:1px dashed #3a4655;border-radius:18px;padding:26px 20px;color:var(--muted);text-align:center;line-height:1.5}.loading:before{content:"";display:block;width:30px;height:30px;margin:0 auto 14px;border:3px solid #324039;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.section{margin-top:25px}.section-title{display:flex;align-items:center;gap:10px;margin:0 2px 12px;font-size:21px}.icon{display:grid;place-items:center;width:34px;height:34px;background:rgba(130,239,197,.12);border:1px solid rgba(130,239,197,.24);border-radius:10px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.output-card{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px;overflow-wrap:anywhere}.output-card p{margin:8px 0 0;color:#d9dee5;line-height:1.55;white-space:pre-wrap}.output-card strong{color:white}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.8px;font-weight:900;text-transform:uppercase;margin-bottom:7px}.pill{display:inline-block;color:var(--accent2);background:rgba(130,239,197,.09);border:1px solid rgba(130,239,197,.18);padding:5px 9px;border-radius:20px;font-size:12px;font-weight:750;margin:9px 5px 0 0}.meta{display:grid;gap:8px;margin-top:13px}.meta div{padding-top:9px;border-top:1px solid #27303b;color:#c8d0d8;line-height:1.45}.meta b{display:block;color:#88939f;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.summary{border-color:rgba(130,239,197,.36);background:linear-gradient(135deg,rgba(130,239,197,.1),var(--surface) 50%)}.error{background:#29191c;border:1px solid #66343b;color:var(--danger);border-radius:15px;padding:18px;line-height:1.5}.hashtags{color:#8eddbf!important}.calendar-day{display:flex;gap:13px}.day-number{flex:0 0 40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--accent);color:#07110d;font-weight:950}.offer{background:linear-gradient(145deg,#18352c,var(--surface));border-color:#315d4e}.approval-actions{display:grid;gap:10px;margin-top:14px}.approval-actions button{margin:0}.secondary{background:#202833;color:#f7f9fb;border:1px solid #3a4655}.success{background:#82efc5;color:#07110d}.approval-status{display:none;margin-top:12px;padding:14px;border-radius:12px;background:rgba(130,239,197,.1);border:1px solid rgba(130,239,197,.28);color:#b7ffe4;line-height:1.45}.approval-status.show{display:block}.footer-note{text-align:center;color:#6f7985;font-size:12px;margin:30px 0}
 @media(min-width:620px){main{padding:34px 28px 80px}.card{padding:26px}.grid.two{grid-template-columns:repeat(2,1fr)}.calendar-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -33,11 +33,22 @@
 <section class="result-shell" aria-live="polite">
 <div class="result-head"><h2>Ta campagne</h2><small>PRÊTE À PUBLIER</small></div>
 <div id="result" class="empty">Ta campagne personnalisée apparaîtra ici.</div>
+<div id="approvalPanel" class="card" hidden>
+  <h3>Validation avant Instagram</h3>
+  <p class="intro">Relis la campagne, copie les textes ou télécharge le dossier. Rien n’est publié automatiquement.</p>
+  <div class="approval-actions">
+    <button type="button" class="secondary" onclick="copyCampaign()">Copier tous les textes</button>
+    <button type="button" class="secondary" onclick="downloadCampaign()">Télécharger la campagne</button>
+    <button type="button" class="success" onclick="approveCampaign()">✓ Valider pour publication manuelle</button>
+  </div>
+  <div id="approvalStatus" class="approval-status"></div>
+</div>
 </section>
 <div class="footer-note">Commercia AI · Création de contenu assistée par IA</div>
 </main>
 
 <script>
+let currentCampaign=null;
 const escapeHtml=value=>String(value??"").replace(/[&<>'"]/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[char]));
 const text=value=>escapeHtml(Array.isArray(value)?value.join(" · "):value);
 const meta=(label,value)=>value?`<div><b>${escapeHtml(label)}</b>${text(value)}</div>`:"";
@@ -53,6 +64,39 @@ function renderCampaign(data){
   return `${data.summary?`<article class="output-card summary"><div class="eyebrow">Vision de la campagne</div><p>${text(data.summary)}</p></article>`:""}${section("📅","Calendrier de la semaine",`<div class="grid calendar-grid">${calendar}</div>`)}${section("✦","Publications Instagram",`<div class="grid">${posts}</div>`)}${section("▶","Reels",`<div class="grid two">${reels}</div>`)}${section("◉","Stories",`<div class="grid two">${stories}</div>`)}${section("€","Offre commerciale",offerCard)}${section("★","Réponse à un avis Google",data.review_reply?`<article class="output-card"><p>${text(data.review_reply)}</p></article>`:"")}`;
 }
 
+function campaignText(data){
+  const lines=["COMMERCIA AI — CAMPAGNE INSTAGRAM",""];
+  if(data.summary)lines.push("STRATÉGIE",data.summary,"");
+  (data.calendar||[]).forEach((x,i)=>lines.push(`JOUR ${i+1} — ${x.day||""}`,`${x.content_type||""} : ${x.topic||""}`,`Objectif : ${x.goal||""}`,""));
+  (data.posts||[]).forEach((x,i)=>lines.push(`PUBLICATION ${i+1} — ${x.title||""}`,x.caption||"",Array.isArray(x.hashtags)?x.hashtags.join(" "):(x.hashtags||""),`CTA : ${x.cta||""}`,""));
+  (data.reels||[]).forEach((x,i)=>lines.push(`REEL ${i+1} — ${x.title||""}`,`Accroche : ${x.hook||""}`,`Plans : ${Array.isArray(x.shots)?x.shots.join(" · "):(x.shots||"")}`,`Texte écran : ${x.overlay_text||""}`,x.caption||"",""));
+  (data.stories||[]).forEach((x,i)=>lines.push(`STORY ${i+1} — ${x.title||""}`,x.content||"",`Interaction : ${x.interaction||""}`,""));
+  if(data.commercial_offer)lines.push("OFFRE COMMERCIALE",data.commercial_offer.headline||"",data.commercial_offer.body||"",data.commercial_offer.cta||"","");
+  if(data.review_reply)lines.push("RÉPONSE À UN AVIS",data.review_reply);
+  return lines.join("\n");
+}
+async function copyCampaign(){
+  if(!currentCampaign)return;
+  await navigator.clipboard.writeText(campaignText(currentCampaign));
+  showApproval("Tous les textes ont été copiés. Tu peux maintenant les coller dans Instagram.");
+}
+function downloadCampaign(){
+  if(!currentCampaign)return;
+  const blob=new Blob([campaignText(currentCampaign)],{type:"text/plain;charset=utf-8"});
+  const link=document.createElement("a");link.href=URL.createObjectURL(blob);
+  link.download=`campagne-instagram-${new Date().toISOString().slice(0,10)}.txt`;link.click();
+  URL.revokeObjectURL(link.href);showApproval("Le dossier de campagne a été téléchargé.");
+}
+function approveCampaign(){
+  if(!currentCampaign)return;
+  localStorage.setItem("commerciaApprovedCampaign",JSON.stringify({approvedAt:new Date().toISOString(),campaign:currentCampaign}));
+  showApproval("Campagne validée ✓ Elle est prête à être publiée manuellement sur Instagram.");
+}
+function showApproval(message){const el=document.getElementById("approvalStatus");el.textContent=message;el.classList.add("show")}
+function activateCampaign(data){
+  currentCampaign=data;localStorage.setItem("commerciaLastCampaign",JSON.stringify(data));
+  document.getElementById("approvalPanel").hidden=false;
+}
 async function generate(){
   const btn=document.getElementById("btn");
   const result=document.getElementById("result");
@@ -64,11 +108,17 @@ async function generate(){
     const response=await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)});
     const json=await response.json();
     if(!response.ok)throw new Error(json.error||"Une erreur est survenue.");
-    result.className="";result.innerHTML=renderCampaign(json.result||{});
+    result.className="";result.innerHTML=renderCampaign(json.result||{});activateCampaign(json.result||{});
     result.scrollIntoView({behavior:"smooth",block:"start"});
   }catch(error){result.className="error";result.textContent=error.message||"La génération a échoué. Réessaie."}
   finally{btn.disabled=false;btn.textContent="✨ Générer une nouvelle campagne"}
 }
+window.addEventListener("DOMContentLoaded",()=>{
+  try{
+    const saved=JSON.parse(localStorage.getItem("commerciaLastCampaign"));
+    if(saved){document.getElementById("result").className="";document.getElementById("result").innerHTML=renderCampaign(saved);activateCampaign(saved)}
+  }catch(_){}
+});
 </script>
 </body>
 </html>
