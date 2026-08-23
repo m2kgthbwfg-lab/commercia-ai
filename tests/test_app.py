@@ -52,3 +52,15 @@ def test_automation_is_disabled_by_default(monkeypatch):
     assert response.status_code == 200
     assert response.get_json()["enabled"] is False
     assert response.get_json()["mode"] == "automatic"
+
+
+def test_auth_pages_load():
+    client = commercia.app.test_client()
+    assert client.get("/signup").status_code == 200
+    assert client.get("/login").status_code == 200
+
+
+def test_workspace_requires_login():
+    response = commercia.app.test_client().get("/workspace")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
