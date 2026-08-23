@@ -3,11 +3,36 @@ import os, json
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from openai import OpenAI
+from flask_login import LoginManager, login_required
+from flask_wtf.csrf import CSRFProtect
+from auth import auth
+from models import User, db
 from instagram_publisher import automation_status
 
 load_dotenv()
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 32 * 1024
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "development-only-change-me")
+database_url = os.getenv("DATABASE_URL", "sqlite:///commercia.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+csrf = CSRFProtect(app)
+login_manager = LoginManager(app)
+login_manager.login_view = "auth.login"
+app.register_blueprint(auth)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
+
+
+with app.app_context():
+    db.create_all()
 
 SYSTEM = """Tu es Commercia AI, un community manager expert pour commerces de proximité.
 Tu crées des contenus concrets, commerciaux, élégants, non génériques et immédiatement publiables.
@@ -30,6 +55,12 @@ def index():
 @app.get("/app")
 def dashboard():
     return render_template("index.html")
+
+@app.get("/workspace")
+@login_required
+def workspace():
+    return render_template("index.html")
+
 
 @app.get("/health")
 def health():
