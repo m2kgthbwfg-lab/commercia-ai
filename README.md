@@ -59,3 +59,20 @@ Il restera à ajouter :
 - historique des campagnes
 - analytics
 - RGPD / CGV / politique de confidentialité
+
+
+## Publication Instagram automatique
+
+Le dépôt contient désormais un moteur de publication Instagram via l'API Meta et
+un Cron Job Render quotidien. La publication reste désactivée tant que
+`AUTO_PUBLISH_ENABLED` n'est pas réglé sur `true`.
+
+Variables nécessaires :
+
+- `META_IG_USER_ID`
+- `META_ACCESS_TOKEN`
+- `INSTAGRAM_PHOTO_URLS` (URLs publiques séparées par des virgules)
+- `AUTO_PUBLISH_ENABLED=true` seulement après un test contrôlé
+
+Le compte Instagram professionnel doit être relié à une Page Facebook technique.
+Le Cron Job est configuré à 17:00 UTC, soit 18:00 en heure d'hiver à Paris.
