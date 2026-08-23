@@ -29,3 +29,11 @@ def test_generate_rejects_invalid_json(monkeypatch):
     )
     assert response.status_code == 400
     assert response.get_json()["error"] == "Requête JSON invalide."
+
+
+def test_home_page_has_manual_instagram_validation():
+    response = commercia.app.test_client().get("/")
+    assert response.status_code == 200
+    assert b"Validation avant Instagram" in response.data
+    assert b"downloadCampaign" in response.data
+    assert b"approveCampaign" in response.data
