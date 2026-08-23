@@ -3,6 +3,7 @@ import os, json
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from openai import OpenAI
+from instagram_publisher import automation_status
 
 load_dotenv()
 app = Flask(__name__)
@@ -28,6 +29,11 @@ def index():
 @app.get("/health")
 def health():
     return {"ok": True, "ai_configured": bool(os.getenv("OPENAI_API_KEY"))}
+
+@app.get("/api/automation/status")
+def get_automation_status():
+    return jsonify(automation_status())
+
 
 @app.post("/api/generate")
 def generate():
