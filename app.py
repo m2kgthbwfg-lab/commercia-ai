@@ -72,6 +72,7 @@ def get_automation_status():
 
 
 @app.post("/api/generate")
+@csrf.exempt
 def generate():
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({
