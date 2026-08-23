@@ -12,3 +12,35 @@ services:
         value: gpt-5.6
       - key: OPENAI_API_KEY
         sync: false
+
+  - type: cron
+    name: commercia-ai-instagram-daily
+    runtime: python
+    schedule: "0 17 * * *"
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run_scheduled_post.py
+    envVars:
+      - key: OPENAI_MODEL
+        value: gpt-5.6
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: META_GRAPH_VERSION
+        value: v23.0
+      - key: META_IG_USER_ID
+        sync: false
+      - key: META_ACCESS_TOKEN
+        sync: false
+      - key: INSTAGRAM_PHOTO_URLS
+        sync: false
+      - key: BUSINESS_NAME
+        value: Commercia AI
+      - key: BUSINESS_ACTIVITY
+        value: commerce de proximité
+      - key: BUSINESS_OFFER
+        value: produits et services du commerce
+      - key: PUBLISH_HOUR
+        value: "18:00"
+      - key: PUBLISH_TIMEZONE
+        value: Europe/Paris
+      - key: AUTO_PUBLISH_ENABLED
+        value: "false"
