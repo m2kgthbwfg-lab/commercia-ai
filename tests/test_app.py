@@ -6,6 +6,13 @@ def test_home_page_loads():
     response = client.get("/")
     assert response.status_code == 200
     assert b"Commercia" in response.data
+    assert b"Instagram travaille" in response.data
+
+
+def test_dashboard_loads():
+    response = commercia.app.test_client().get("/app")
+    assert response.status_code == 200
+    assert b"Ton community manager automatique" in response.data
 
 
 def test_health_reports_missing_api_key(monkeypatch):
@@ -32,7 +39,7 @@ def test_generate_rejects_invalid_json(monkeypatch):
 
 
 def test_home_page_has_manual_instagram_validation():
-    response = commercia.app.test_client().get("/")
+    response = commercia.app.test_client().get("/app")
     assert response.status_code == 200
     assert b"Validation avant Instagram" in response.data
     assert b"downloadCampaign" in response.data
