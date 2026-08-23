@@ -37,3 +37,11 @@ def test_home_page_has_manual_instagram_validation():
     assert b"Validation avant Instagram" in response.data
     assert b"downloadCampaign" in response.data
     assert b"approveCampaign" in response.data
+
+
+def test_automation_is_disabled_by_default(monkeypatch):
+    monkeypatch.delenv("AUTO_PUBLISH_ENABLED", raising=False)
+    response = commercia.app.test_client().get("/api/automation/status")
+    assert response.status_code == 200
+    assert response.get_json()["enabled"] is False
+    assert response.get_json()["mode"] == "automatic"
