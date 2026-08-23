@@ -24,6 +24,11 @@ commercial_offer = objet {headline, body, cta}
 
 @app.get("/")
 def index():
+    return render_template("landing.html")
+
+
+@app.get("/app")
+def dashboard():
     return render_template("index.html")
 
 @app.get("/health")
