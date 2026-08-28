@@ -1,54 +1,204 @@
+from datetime import datetime, timedelta, timezone
+from io import BytesIO
+
 import app as commercia
+from models import BrandProfile, Campaign, User, db
+
+
+def client():
+    commercia.app.config.update(TESTING=True, WTF_CSRF_ENABLED=False)
+    return commercia.app.test_client()
+
+
+def create_user(onboarded=True):
+    with commercia.app.app_context():
+        db.drop_all()
+        db.create_all()
+        user = User(
+            email="client@example.com",
+            first_name="Malek",
+            password_hash="unused",
+            onboarding_complete=onboarded,
+            trial_ends_at=datetime.now(timezone.utc) + timedelta(days=7),
+        )
+        user.brand = BrandProfile(
+            business_name="Sur un Plateau",
+            activity="Plateaux de fruits",
+            location="Paris",
+            audience="Particuliers et entreprises",
+            description="Créateur de plateaux de fruits",
+            differentiators="Produits frais et présentation sur mesure",
+            products="Plateaux de fruits frais",
+            communication_goals="Obtenir plus de commandes",
+        )
+        db.session.add(user)
+        db.session.commit()
+        return user.id
+
+
+def login_test_client(test_client, user_id):
+    with test_client.session_transaction() as session:
+        session["_user_id"] = str(user_id)
+        session["_fresh"] = True
 
 
 def test_home_page_loads():
-    client = commercia.app.test_client()
-    response = client.get("/")
+    response = client().get("/")
     assert response.status_code == 200
     assert b"Commercia" in response.data
     assert b"commerce m\xc3\xa9rite" in response.data
+    assert b"7 jours" in response.data
 
 
-def test_dashboard_loads():
-    response = commercia.app.test_client().get("/app")
+def test_private_app_requires_login():
+    response = client().get("/app")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
+def test_workspace_is_personalized():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.get("/workspace")
     assert response.status_code == 200
-    assert b"votre semaine prend forme" in response.data
+    assert b"Bonjour Malek" in response.data
+    assert b"Sur un Plateau" in response.data
 
 
-def test_health_reports_missing_api_key(monkeypatch):
+def test_health_reports_configuration(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    response = commercia.app.test_client().get("/health")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    monkeypatch.delenv("STRIPE_SECRET_KEY", raising=False)
+    response = client().get("/health")
     assert response.status_code == 200
-    assert response.get_json() == {"ok": True, "ai_configured": False}
+    assert response.get_json() == {
+        "ok": True,
+        "ai_configured": False,
+        "database_configured": False,
+        "billing_configured": False,
+    }
+
+
+def test_generate_requires_login(monkeypatch):
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    response = client().post("/api/generate", json={})
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
 
 
 def test_generate_requires_api_key(monkeypatch):
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
-    response = commercia.app.test_client().post("/api/generate", json={})
+    response = test_client.post("/api/generate", json={})
     assert response.status_code == 400
     assert "OPENAI_API_KEY" in response.get_json()["error"]
 
 
-def test_generate_rejects_invalid_json(monkeypatch):
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
-    response = commercia.app.test_client().post(
-        "/api/generate", data="not-json", content_type="application/json"
+def test_onboarding_pages_and_redirect():
+    user_id = create_user(onboarded=False)
+    test_client = client()
+    login_test_client(test_client, user_id)
+    assert test_client.get("/onboarding").status_code == 200
+    workspace = test_client.get("/workspace")
+    assert workspace.status_code == 302
+    assert "/onboarding" in workspace.headers["Location"]
+
+
+def test_auth_pages_load():
+    test_client = client()
+    assert test_client.get("/signup").status_code == 200
+    assert test_client.get("/login").status_code == 200
+
+
+def test_signup_and_onboarding_flow():
+    with commercia.app.app_context():
+        db.drop_all()
+        db.create_all()
+    test_client = client()
+    signup = test_client.post(
+        "/signup?plan=pro",
+        data={
+            "first_name": "Malek",
+            "business_name": "Sur un Plateau",
+            "activity": "Plateaux de fruits",
+            "email": "malek@example.com",
+            "password": "motdepasse1",
+            "plan": "pro",
+        },
     )
-    assert response.status_code == 400
-    assert response.get_json()["error"] == "Requête JSON invalide."
-
-
-def test_home_page_has_manual_instagram_validation():
-    response = commercia.app.test_client().get("/app")
-    assert response.status_code == 200
-    assert b"Validation avant Instagram" in response.data
-    assert b"downloadCampaign" in response.data
-    assert b"approveCampaign" in response.data
+    assert signup.status_code == 302
+    assert "/onboarding" in signup.headers["Location"]
+    onboarding = test_client.post(
+        "/onboarding",
+        data={
+            "location": "Paris & Ile-de-France",
+            "audience": "Particuliers et entreprises",
+            "description": "Créateur de plateaux de fruits sur mesure",
+            "differentiators": "Fraîcheur et présentation artisanale",
+            "products": "Plateaux, corbeilles et événements",
+            "communication_goals": "Obtenir plus de commandes",
+            "tone": "premium, chaleureux et humain",
+            "visual_style": "naturel et coloré",
+            "preferred_formats": "Reel, Story, Carrousel, Post",
+            "automation_mode": "autopilot",
+            "publish_hour": "18:00",
+        },
+    )
+    assert onboarding.status_code == 302
+    assert "/workspace" in onboarding.headers["Location"]
+    workspace = test_client.get("/workspace")
+    assert workspace.status_code == 200
+    assert b"Formule Pro" in workspace.data
 
 
 def test_automation_is_disabled_by_default(monkeypatch):
     monkeypatch.delenv("AUTO_PUBLISH_ENABLED", raising=False)
-    response = commercia.app.test_client().get("/api/automation/status")
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.get("/api/automation/status")
     assert response.status_code == 200
     assert response.get_json()["enabled"] is False
     assert response.get_json()["mode"] == "automatic"
+    assert response.get_json()["connected"] is False
+
+
+def test_automation_status_requires_login():
+    response = client().get("/api/automation/status")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
+def test_campaign_requires_real_media_before_scheduling():
+    user_id = create_user()
+    with commercia.app.app_context():
+        user = db.session.get(User, user_id)
+        campaign = Campaign(
+            brand_id=user.brand.id,
+            brief_json={},
+            result_json={"posts": [{"caption": "Bonjour", "hashtags": ["#paris"]}]},
+        )
+        db.session.add(campaign)
+        db.session.commit()
+        campaign_id = campaign.id
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post(f"/api/campaigns/{campaign_id}/approve")
+    assert response.status_code == 409
+    assert "photo" in response.get_json()["error"]
+
+
+def test_media_upload_requires_storage_configuration(monkeypatch):
+    monkeypatch.delenv("CLOUDINARY_URL", raising=False)
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post(
+        "/api/media",
+        data={"file": (BytesIO(b"fake-image"), "photo.jpg")},
+        content_type="multipart/form-data",
+    )
+    assert response.status_code == 503

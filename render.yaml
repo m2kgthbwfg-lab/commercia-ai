@@ -12,11 +12,33 @@ services:
         value: gpt-5.6
       - key: OPENAI_API_KEY
         sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_ESSENTIAL
+        sync: false
+      - key: STRIPE_PRICE_AUTOPILOT
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false
+      - key: META_APP_ID
+        sync: false
+      - key: META_APP_SECRET
+        sync: false
+      - key: TOKEN_ENCRYPTION_KEY
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
 
   - type: cron
     name: commercia-ai-instagram-daily
     runtime: python
-    schedule: "0 17 * * *"
+    schedule: "*/15 * * * *"
     buildCommand: pip install -r requirements.txt
     startCommand: python run_scheduled_post.py
     envVars:
@@ -25,22 +47,10 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: META_GRAPH_VERSION
-        value: v23.0
-      - key: META_IG_USER_ID
+        value: v26.0
+      - key: DATABASE_URL
         sync: false
-      - key: META_ACCESS_TOKEN
+      - key: SECRET_KEY
+        generateValue: true
+      - key: TOKEN_ENCRYPTION_KEY
         sync: false
-      - key: INSTAGRAM_PHOTO_URLS
-        sync: false
-      - key: BUSINESS_NAME
-        value: Commercia AI
-      - key: BUSINESS_ACTIVITY
-        value: commerce de proximité
-      - key: BUSINESS_OFFER
-        value: produits et services du commerce
-      - key: PUBLISH_HOUR
-        value: "18:00"
-      - key: PUBLISH_TIMEZONE
-        value: Europe/Paris
-      - key: AUTO_PUBLISH_ENABLED
-        value: "false"
