@@ -3,60 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0b0e13">
-<title>Commercia AI</title>
+<meta name="theme-color" content="#f5f1e8">
+<title>Mon espace — Commercia</title>
 <style>
-:root{--bg:#08070d;--surface:#14121d;--surface2:#0e0c15;--line:#2d2939;--text:#fbfaff;--muted:#aaa5b7;--accent:#b69cff;--accent2:#ffb86b;--danger:#ff9d9d}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 88% 2%,rgba(113,74,200,.28) 0,transparent 30rem),radial-gradient(circle at 5% 30%,rgba(255,135,75,.11) 0,transparent 25rem),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}main{max-width:760px;margin:auto;padding:24px 18px 70px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px}.logo{font-size:23px;font-weight:900;letter-spacing:-.5px}.live-chip{display:flex;align-items:center;gap:7px;padding:8px 11px;border:1px solid var(--line);border-radius:30px;color:var(--muted);font-size:11px;font-weight:800}.live-dot{width:8px;height:8px;border-radius:50%;background:#ffb86b;box-shadow:0 0 14px #ffb86b}.logo span{color:var(--accent)}.badge{display:inline-flex;margin-top:50px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#100c18;padding:7px 11px;border-radius:30px;font-size:11px;font-weight:900;letter-spacing:.7px}h1{font-size:clamp(38px,10vw,58px);line-height:.98;letter-spacing:-2px;margin:17px 0 14px;max-width:650px}h2{font-size:25px;margin:0}h3{font-size:18px;margin:0 0 12px}.intro{color:var(--muted);line-height:1.55;font-size:17px;max-width:580px}.card{background:rgba(20,25,34,.96);border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:24px;box-shadow:0 18px 55px rgba(0,0,0,.18)}label{display:block;font-size:13px;font-weight:750;margin:16px 0 7px;color:#d9dfe6}input,textarea{width:100%;padding:13px 14px;background:#0c1016;border:1px solid #343d49;border-radius:11px;color:white;font:inherit;font-size:16px;outline:none}input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(130,239,197,.12)}textarea{min-height:82px;resize:vertical}button{width:100%;padding:16px;margin-top:21px;border:0;border-radius:12px;background:var(--accent);color:#07110d;font-size:16px;font-weight:900;cursor:pointer}button:disabled{opacity:.65;cursor:wait}.result-shell{padding:0;background:transparent;border:0;box-shadow:none}.result-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:36px 2px 14px}.result-head small{color:var(--accent);font-weight:800}.empty,.loading{background:var(--surface);border:1px dashed #3a4655;border-radius:18px;padding:26px 20px;color:var(--muted);text-align:center;line-height:1.5}.loading:before{content:"";display:block;width:30px;height:30px;margin:0 auto 14px;border:3px solid #324039;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.section{margin-top:25px}.section-title{display:flex;align-items:center;gap:10px;margin:0 2px 12px;font-size:21px}.icon{display:grid;place-items:center;width:34px;height:34px;background:rgba(130,239,197,.12);border:1px solid rgba(130,239,197,.24);border-radius:10px}.grid{display:grid;grid-template-columns:1fr;gap:12px}.output-card{background:var(--surface);border:1px solid var(--line);border-radius:17px;padding:18px;overflow-wrap:anywhere}.output-card p{margin:8px 0 0;color:#d9dee5;line-height:1.55;white-space:pre-wrap}.output-card strong{color:white}.eyebrow{color:var(--accent);font-size:11px;letter-spacing:.8px;font-weight:900;text-transform:uppercase;margin-bottom:7px}.pill{display:inline-block;color:var(--accent2);background:rgba(130,239,197,.09);border:1px solid rgba(130,239,197,.18);padding:5px 9px;border-radius:20px;font-size:12px;font-weight:750;margin:9px 5px 0 0}.meta{display:grid;gap:8px;margin-top:13px}.meta div{padding-top:9px;border-top:1px solid #27303b;color:#c8d0d8;line-height:1.45}.meta b{display:block;color:#88939f;font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px}.summary{border-color:rgba(130,239,197,.36);background:linear-gradient(135deg,rgba(130,239,197,.1),var(--surface) 50%)}.error{background:#29191c;border:1px solid #66343b;color:var(--danger);border-radius:15px;padding:18px;line-height:1.5}.hashtags{color:#8eddbf!important}.calendar-day{display:flex;gap:13px}.day-number{flex:0 0 40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--accent);color:#07110d;font-weight:950}.offer{background:linear-gradient(145deg,#18352c,var(--surface));border-color:#315d4e}.automation-card{position:relative;overflow:hidden;background:linear-gradient(135deg,rgba(182,156,255,.14),rgba(255,184,107,.07));border-color:rgba(182,156,255,.35)}.automation-card:after{content:"";position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(182,156,255,.12);filter:blur(35px);right:-70px;top:-90px;pointer-events:none}.automation-row{display:flex;align-items:center;justify-content:space-between;gap:18px}.automation-state{display:inline-flex;align-items:center;gap:7px;color:var(--accent2);font-size:12px;font-weight:850}.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:17px}.status-item{padding:12px;background:rgba(8,7,13,.48);border:1px solid var(--line);border-radius:12px}.status-item b{display:block;font-size:15px}.status-item span{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px}.approval-actions{display:grid;gap:10px;margin-top:14px}.approval-actions button{margin:0}.secondary{background:#202833;color:#f7f9fb;border:1px solid #3a4655}.success{background:#82efc5;color:#07110d}.approval-status{display:none;margin-top:12px;padding:14px;border-radius:12px;background:rgba(130,239,197,.1);border:1px solid rgba(130,239,197,.28);color:#b7ffe4;line-height:1.45}.approval-status.show{display:block}.footer-note{text-align:center;color:#6f7985;font-size:12px;margin:30px 0}
-@media(min-width:620px){main{padding:34px 28px 80px}.card{padding:26px}.grid.two{grid-template-columns:repeat(2,1fr)}.calendar-grid{grid-template-columns:repeat(2,1fr)}}
+:root{--paper:#f5f1e8;--white:#fffdf9;--ink:#183127;--ink2:#26473a;--muted:#6b776f;--line:#ddd6c9;--coral:#d45f4d;--coral2:#a94337;--sage:#dce5db;--gold:#d3a54e;--danger:#a13232;--shadow:0 16px 45px rgba(31,47,38,.08)}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}.app-shell{min-height:100vh;display:grid;grid-template-columns:238px 1fr}.sidebar{position:sticky;top:0;height:100vh;background:var(--ink);color:#c8d5cd;padding:28px 20px;display:flex;flex-direction:column}.logo{display:flex;align-items:center;gap:10px;color:white;font-size:19px;font-weight:850}.logo-mark{width:31px;height:31px;display:grid;place-items:center;background:var(--coral);border-radius:50% 47% 53% 48%;font-family:Georgia,serif;transform:rotate(-5deg)}.nav-label{font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:#7f998b;margin:38px 12px 12px}.side-link{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:5px;margin:3px 0;color:#b9c9c0;font-size:13px}.side-link.active{background:#2b493d;color:white}.side-icon{width:19px;text-align:center}.account{margin-top:auto;border-top:1px solid #365247;padding:20px 8px 0;display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:50%;background:var(--coral);display:grid;place-items:center;color:white;font-family:Georgia,serif}.account b{display:block;color:white;font-size:12px}.account small{color:#8da095;font-size:10px}.mobile-top{display:none}.main{min-width:0;padding:38px 42px 90px;max-width:1260px;width:100%;margin:auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:25px;margin-bottom:28px}.eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:var(--coral2);font-weight:850;margin-bottom:7px}.page-head h1{font-family:Georgia,"Times New Roman",serif;font-size:42px;font-weight:500;letter-spacing:-1.3px;margin:0 0 8px}.intro{color:var(--muted);line-height:1.55;font-size:14px;max-width:610px;margin:0}.date-chip{padding:10px 14px;border:1px solid var(--line);background:rgba(255,253,249,.65);border-radius:4px;color:var(--muted);font-size:11px;white-space:nowrap}.overview{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}.card{background:var(--white);border:1px solid var(--line);border-radius:7px;padding:24px;box-shadow:0 8px 25px rgba(31,47,38,.025)}.automation-card{background:var(--ink);color:white;position:relative;overflow:hidden}.automation-card:after{content:"c";position:absolute;right:-12px;bottom:-90px;font-family:Georgia,serif;font-size:270px;line-height:1;color:rgba(255,255,255,.035)}.automation-row{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;position:relative;z-index:1}.automation-row h3{font-family:Georgia,serif;font-size:25px;font-weight:500;margin:0}.automation-state{display:inline-flex;align-items:center;gap:7px;color:#f0c16e;font-size:10px;font-weight:850;letter-spacing:.7px}.live-dot{width:7px;height:7px;border-radius:50%;background:#e0a94c}.status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:30px;position:relative;z-index:1}.status-item{padding:13px 15px;background:#264238;border:1px solid #3b584d;border-radius:5px}.status-item b{display:block;font-family:Georgia,serif;font-size:22px;font-weight:500}.status-item span{color:#aebfb5;font-size:9px;text-transform:uppercase;letter-spacing:.7px}.week-card{display:flex;flex-direction:column;justify-content:space-between}.week-card h3{font-family:Georgia,serif;font-size:23px;font-weight:500;margin:0}.week-score{font-family:Georgia,serif;font-size:50px;margin:10px 0 0}.week-score small{font-family:Inter,sans-serif;font-size:11px;color:var(--muted)}.progress{height:5px;background:#ebe5da;margin-top:18px;border-radius:4px;overflow:hidden}.progress span{display:block;height:100%;width:72%;background:var(--coral)}.content-layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(310px,.9fr);gap:16px;margin-top:16px;align-items:start}.panel-title{display:flex;align-items:flex-start;justify-content:space-between;gap:15px;margin-bottom:18px}.panel-title h2{font-family:Georgia,serif;font-size:28px;font-weight:500;margin:0 0 5px}.panel-title p{font-size:12px;color:var(--muted);margin:0;line-height:1.5}.step-badge{font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:var(--coral2);border:1px solid #e4b4ab;padding:6px 8px;border-radius:3px;white-space:nowrap}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0 14px}label{display:block;font-size:11px;font-weight:800;margin:15px 0 7px;color:#485950}input,textarea{width:100%;padding:12px 13px;background:#fcfaf5;border:1px solid #d8d0c3;border-radius:5px;color:var(--ink);font:inherit;font-size:14px;outline:none}input:focus,textarea:focus{border-color:var(--ink2);box-shadow:0 0 0 3px rgba(38,71,58,.09)}textarea{min-height:78px;resize:vertical}.full{grid-column:1/-1}button{width:100%;padding:14px 18px;margin-top:20px;border:0;border-radius:4px;background:var(--coral);color:white;font-size:13px;font-weight:850;cursor:pointer;transition:.2s ease}button:hover{background:var(--coral2);transform:translateY(-1px)}button:disabled{opacity:.65;cursor:wait}.tip-card{background:var(--sage);border-color:#c5d2c4}.tip-card h3{font-family:Georgia,serif;font-size:23px;font-weight:500;margin:0 0 10px}.tip-card p{font-size:13px;line-height:1.6;color:#53645a;margin:0}.tip-list{display:grid;gap:9px;margin-top:18px}.tip{display:flex;gap:10px;font-size:12px;color:#44574c}.tip span{color:var(--coral2);font-weight:900}.result-shell{margin-top:22px}.result-head{display:flex;align-items:end;justify-content:space-between;gap:10px;margin:36px 0 14px}.result-head h2{font-family:Georgia,serif;font-size:32px;font-weight:500;margin:0}.result-head small{color:var(--coral2);font-weight:850;font-size:9px;letter-spacing:.8px}.empty,.loading{background:var(--white);border:1px dashed #c9c0b1;border-radius:7px;padding:38px 20px;color:var(--muted);text-align:center;line-height:1.5}.loading:before{content:"";display:block;width:28px;height:28px;margin:0 auto 14px;border:3px solid #d6ddd6;border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.section{margin-top:27px}.section-title{display:flex;align-items:center;gap:10px;margin:0 0 12px;font-family:Georgia,serif;font-size:24px;font-weight:500}.icon{display:grid;place-items:center;width:31px;height:31px;background:var(--ink);color:white;border-radius:50%;font-family:Inter,sans-serif;font-size:12px}.grid{display:grid;grid-template-columns:1fr;gap:10px}.grid.two,.calendar-grid{grid-template-columns:repeat(2,1fr)}.output-card{background:var(--white);border:1px solid var(--line);border-radius:6px;padding:19px;overflow-wrap:anywhere}.output-card p{margin:8px 0 0;color:#4f6056;line-height:1.55;white-space:pre-wrap;font-size:13px}.output-card strong{color:var(--ink)}.output-card h3{font-family:Georgia,serif;font-size:20px;font-weight:500;margin:0}.pill{display:inline-block;color:var(--coral2);background:#f8e7e2;border:1px solid #ecc6bd;padding:5px 8px;border-radius:3px;font-size:10px;font-weight:750;margin:9px 5px 0 0}.meta{display:grid;gap:8px;margin-top:13px}.meta div{padding-top:9px;border-top:1px solid #ebe5da;color:#4f6056;line-height:1.45;font-size:13px}.meta b{display:block;color:#879088;font-size:9px;text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px}.summary{border-left:4px solid var(--coral);background:#fffaf4}.error{background:#fff0ee;border:1px solid #e0a39c;color:var(--danger);border-radius:6px;padding:18px;line-height:1.5}.hashtags{color:#517663!important}.calendar-day{display:flex;gap:13px}.day-number{flex:0 0 36px;height:36px;display:grid;place-items:center;border-radius:50%;background:var(--ink);color:white;font-family:Georgia,serif}.offer{background:#eef3ed;border-color:#c5d2c4}.approval-panel{margin-top:16px}.approval-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}.approval-actions button{margin:0}.secondary{background:transparent;color:var(--ink);border:1px solid var(--line)}.secondary:hover{background:#f0ebe1}.success{background:var(--ink);color:white}.approval-status{display:none;margin-top:12px;padding:14px;border-radius:5px;background:#edf4ed;border:1px solid #c5d2c4;color:#315343;line-height:1.45;font-size:13px}.approval-status.show{display:block}.footer-note{text-align:center;color:#8b938d;font-size:11px;margin:34px 0}
+@media(max-width:980px){.app-shell{grid-template-columns:1fr}.sidebar{display:none}.mobile-top{display:flex;height:68px;background:var(--ink);color:white;align-items:center;justify-content:space-between;padding:0 20px}.main{padding:28px 24px 80px}.content-layout{grid-template-columns:1fr}.tip-card{order:-1}.approval-actions{grid-template-columns:1fr}}
+@media(max-width:640px){.main{padding:24px 15px 70px}.page-head{display:block}.date-chip{display:none}.page-head h1{font-size:36px}.overview{grid-template-columns:1fr}.status-grid{gap:6px}.status-item{padding:11px 9px}.status-item b{font-size:19px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.grid.two,.calendar-grid{grid-template-columns:1fr}.card{padding:19px}.panel-title{display:block}.step-badge{display:inline-block;margin-top:12px}.week-card{display:none}}
 </style>
 </head>
 <body>
-<main>
-<div class="topbar"><div class="logo">Commercia<span>AI</span></div><div class="live-chip"><span class="live-dot"></span>INSTAGRAM AUTO</div></div>
-<div class="badge">COMPTE PILOTE</div>
-<h1>Ton community manager automatique.</h1>
-<p class="intro">L’agent IA qui imagine, programme et publie le contenu de ton commerce pendant que tu travailles.</p>
-<div class="card automation-card">
-  <div class="automation-row">
-    <div><div class="eyebrow">Pilotage automatique</div><h3 id="autoTitle">Configuration Instagram</h3></div>
-    <div id="autoState" class="automation-state"><span class="live-dot"></span>EN ATTENTE</div>
-  </div>
-  <div class="status-grid">
-    <div class="status-item"><b id="autoTime">18:00</b><span>Publication</span></div>
-    <div class="status-item"><b>7/7</b><span>Jours actifs</span></div>
-    <div class="status-item"><b id="photoCount">0</b><span>Photos prêtes</span></div>
-  </div>
-</div>
-
-<div class="card">
-<label for="business">Entreprise</label><input id="business" value="Sur un Plateau">
-<label for="activity">Activité</label><input id="activity" value="Plateaux de fruits raffinés et événementiel">
-<label for="location">Zone</label><input id="location" value="Paris & Île-de-France">
-<label for="positioning">Positionnement</label><input id="positioning" value="Premium, artisanal, frais et élégant">
-<label for="audience">Clientèle</label><input id="audience" value="Particuliers et entreprises">
-<label for="offer">Offre</label><textarea id="offer">Créations de fruits frais sur commande, plateaux raffinés et prestations événementielles.</textarea>
-<label for="objective">Objectif</label><textarea id="objective">Augmenter la visibilité Instagram et obtenir davantage de commandes par message privé.</textarea>
-<label for="notes">Instructions</label><textarea id="notes">Univers très visuel, fruits colorés, créations premium et Reels courts.</textarea>
-<button type="button" onclick="generate()" id="btn">✨ Générer ma semaine avec l'IA</button>
-</div>
-
-<section class="result-shell" aria-live="polite">
-<div class="result-head"><h2>Ta campagne</h2><small>PRÊTE À PUBLIER</small></div>
-<div id="result" class="empty">Ta campagne personnalisée apparaîtra ici.</div>
-<div id="approvalPanel" class="card" hidden>
-  <h3>Validation avant Instagram</h3>
-  <p class="intro">Relis la campagne, copie les textes ou télécharge le dossier. Rien n’est publié automatiquement.</p>
-  <div class="approval-actions">
-    <button type="button" class="secondary" onclick="copyCampaign()">Copier tous les textes</button>
-    <button type="button" class="secondary" onclick="downloadCampaign()">Télécharger la campagne</button>
-    <button type="button" class="success" onclick="approveCampaign()">✓ Valider pour publication manuelle</button>
-  </div>
-  <div id="approvalStatus" class="approval-status"></div>
-</div>
-</section>
-<div class="footer-note">Commercia AI · Création de contenu assistée par IA</div>
+<div class="app-shell">
+<aside class="sidebar">
+  <a class="logo" href="/"><span class="logo-mark">c</span>Commercia</a>
+  <div class="nav-label">Mon espace</div>
+  <div class="side-link active"><span class="side-icon">□</span>Vue d’ensemble</div>
+  <div class="side-link"><span class="side-icon">◇</span>Ma semaine</div>
+  <div class="side-link"><span class="side-icon">○</span>Bibliothèque</div>
+  <div class="side-link"><span class="side-icon">↗</span>Résultats</div>
+  <div class="nav-label">Mon commerce</div>
+  <div class="side-link"><span class="side-icon">✦</span>Identité de marque</div>
+  <div class="side-link"><span class="side-icon">◎</span>Connexion Instagram</div>
+  <div class="account"><div class="avatar">S</div><div><b>Sur un Plateau</b><small>Compte pilote</small></div></div>
+</aside>
+<div>
+<div class="mobile-top"><a class="logo" href="/"><span class="logo-mark">c</span>Commercia</a><span style="font-size:12px;color:#b9c9c0">Compte pilote</span></div>
+<main class="main">
+  <header class="page-head"><div><div class="eyebrow">Vue d’ensemble</div><h1>Bonjour, votre semaine prend forme.</h1><p class="intro">Retrouvez ici votre planning, vos réglages et les contenus préparés pour Sur un Plateau.</p></div><div class="date-chip">Semaine du 7 septembre 2026</div></header>
+  <section class="overview">
+    <div class="card automation-card"><div class="automation-row"><div><div class="eyebrow" style="color:#efbd6d">Publication Instagram</div><h3 id="autoTitle">Configuration Instagram</h3></div><div id="autoState" class="automation-state"><span class="live-dot"></span>EN ATTENTE</div></div><div class="status-grid"><div class="status-item"><b id="autoTime">18:00</b><span>Publication</span></div><div class="status-item"><b>7/7</b><span>Jours actifs</span></div><div class="status-item"><b id="photoCount">0</b><span>Photos prêtes</span></div></div></div>
+    <div class="card week-card"><div><div class="eyebrow">Préparation</div><h3>Votre semaine</h3></div><div><div class="week-score">5 <small>contenus en préparation</small></div><div class="progress"><span></span></div></div></div>
+  </section>
+  <section class="content-layout">
+    <div class="card">
+      <div class="panel-title"><div><h2>Présentez votre actualité</h2><p>Ces informations servent uniquement à construire une semaine fidèle à votre commerce.</p></div><span class="step-badge">Étape 1 sur 2</span></div>
+      <div class="form-grid">
+        <div><label for="business">Nom du commerce</label><input id="business" value="Sur un Plateau"></div>
+        <div><label for="activity">Activité</label><input id="activity" value="Plateaux de fruits raffinés et événementiel"></div>
+        <div><label for="location">Zone desservie</label><input id="location" value="Paris & Île-de-France"></div>
+        <div><label for="positioning">Image de marque</label><input id="positioning" value="Premium, artisanal, frais et élégant"></div>
+        <div class="full"><label for="audience">Clientèle principale</label><input id="audience" value="Particuliers et entreprises"></div>
+        <div class="full"><label for="offer">Actualité ou offre à mettre en avant</label><textarea id="offer">Créations de fruits frais sur commande, plateaux raffinés et prestations événementielles.</textarea></div>
+        <div class="full"><label for="objective">Résultat recherché</label><textarea id="objective">Augmenter la visibilité Instagram et obtenir davantage de commandes par message privé.</textarea></div>
+        <div class="full"><label for="notes">Indications particulières</label><textarea id="notes">Univers très visuel, fruits colorés, créations premium et Reels courts.</textarea></div>
+      </div>
+      <button type="button" onclick="generate()" id="btn">Préparer ma semaine →</button>
+    </div>
+    <aside class="card tip-card"><div class="eyebrow">Conseil Commercia</div><h3>Le vrai fait la différence.</h3><p>Les contenus les plus convaincants partent de votre quotidien. Pensez à ajouter régulièrement des photos simples de vos produits, de vos gestes et de votre équipe.</p><div class="tip-list"><div class="tip"><span>✓</span>Une lumière naturelle</div><div class="tip"><span>✓</span>Un détail de votre savoir-faire</div><div class="tip"><span>✓</span>Une offre claire cette semaine</div></div></aside>
+  </section>
+  <section class="result-shell" aria-live="polite"><div class="result-head"><h2>Votre campagne</h2><small>PRÊTE À RELIRE</small></div><div id="result" class="empty">Votre campagne personnalisée apparaîtra ici après la préparation.</div><div id="approvalPanel" class="card approval-panel" hidden><div class="panel-title"><div><h2>Validation avant Instagram</h2><p>Relisez la campagne et choisissez ce que vous souhaitez en faire.</p></div><span class="step-badge">Étape 2 sur 2</span></div><div class="approval-actions"><button type="button" class="secondary" onclick="copyCampaign()">Copier les textes</button><button type="button" class="secondary" onclick="downloadCampaign()">Télécharger le dossier</button><button type="button" class="success" onclick="approveCampaign()">Valider la campagne</button></div><div id="approvalStatus" class="approval-status"></div></div></section>
+  <div class="footer-note">Commercia · Votre communication, enfin régulière</div>
 </main>
+</div>
+</div>
 
 <script>
 let currentCampaign=null;
@@ -89,7 +88,7 @@ function campaignText(data){
 async function copyCampaign(){
   if(!currentCampaign)return;
   await navigator.clipboard.writeText(campaignText(currentCampaign));
-  showApproval("Tous les textes ont été copiés. Tu peux maintenant les coller dans Instagram.");
+  showApproval("Tous les textes ont été copiés.");
 }
 function downloadCampaign(){
   if(!currentCampaign)return;
@@ -101,7 +100,7 @@ function downloadCampaign(){
 function approveCampaign(){
   if(!currentCampaign)return;
   localStorage.setItem("commerciaApprovedCampaign",JSON.stringify({approvedAt:new Date().toISOString(),campaign:currentCampaign}));
-  showApproval("Campagne validée ✓ Elle est prête à être publiée manuellement sur Instagram.");
+  showApproval("Campagne validée ✓ Elle est prête à être programmée sur Instagram.");
 }
 function showApproval(message){const el=document.getElementById("approvalStatus");el.textContent=message;el.classList.add("show")}
 function activateCampaign(data){
@@ -111,8 +110,8 @@ function activateCampaign(data){
 async function generate(){
   const btn=document.getElementById("btn");
   const result=document.getElementById("result");
-  btn.disabled=true;btn.textContent="Commercia AI travaille...";
-  result.className="loading";result.textContent="Analyse du commerce et création de la campagne…";
+  btn.disabled=true;btn.textContent="Préparation de votre semaine...";
+  result.className="loading";result.textContent="Commercia étudie votre actualité et prépare le calendrier…";
   const ids=["business","activity","location","positioning","audience","offer","objective","notes"];
   const data=Object.fromEntries(ids.map(id=>[id,document.getElementById(id).value.trim()]));
   try{
@@ -122,7 +121,7 @@ async function generate(){
     result.className="";result.innerHTML=renderCampaign(json.result||{});activateCampaign(json.result||{});
     result.scrollIntoView({behavior:"smooth",block:"start"});
   }catch(error){result.className="error";result.textContent=error.message||"La génération a échoué. Réessaie."}
-  finally{btn.disabled=false;btn.textContent="✨ Générer une nouvelle campagne"}
+  finally{btn.disabled=false;btn.textContent="Préparer une nouvelle semaine →"}
 }
 async function loadAutomationStatus(){
   try{
