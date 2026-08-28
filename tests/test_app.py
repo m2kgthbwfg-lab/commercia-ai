@@ -6,13 +6,13 @@ def test_home_page_loads():
     response = client.get("/")
     assert response.status_code == 200
     assert b"Commercia" in response.data
-    assert b"Instagram travaille" in response.data
+    assert b"commerce m\xc3\xa9rite" in response.data
 
 
 def test_dashboard_loads():
     response = commercia.app.test_client().get("/app")
     assert response.status_code == 200
-    assert b"Ton community manager automatique" in response.data
+    assert b"votre semaine prend forme" in response.data
 
 
 def test_health_reports_missing_api_key(monkeypatch):
