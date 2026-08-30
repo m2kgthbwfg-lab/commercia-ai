@@ -1,6 +1,17 @@
-# Commercia — SaaS de communication pour commerces locaux
+# Commercia AI — Responsable réseaux sociaux IA
 
-Cette version appelle réellement l'API OpenAI depuis le serveur.
+Commercia AI est une plateforme universelle de création, planification et publication de contenu social. Cette version est un MVP Instagram : elle appelle réellement OpenAI et l'API officielle Instagram depuis le serveur.
+
+## État réel du produit
+
+Consultez avant toute évolution :
+
+- [AUDIT.md](AUDIT.md) — fonctionnalités réelles, limites, sécurité et production ;
+- [ROADMAP.md](ROADMAP.md) — phases de transformation priorisées ;
+- [ARCHITECTURE_TARGET.md](ARCHITECTURE_TARGET.md) — architecture cible progressive ;
+- [COMPETITIVE_GAP.md](COMPETITIVE_GAP.md) — écarts concurrentiels vérifiés.
+
+Important : la publication Instagram directe fonctionne. L'exécution planifiée de l'Autopilot nécessite encore le déploiement du service cron/worker décrit dans la roadmap.
 
 ## Démarrage (Mac / Windows / Linux)
 
@@ -28,7 +39,7 @@ Le fichier `.env` reste uniquement côté serveur.
 
 Le dépôt contient un fichier `render.yaml` prêt pour Render. Après connexion du
 dépôt, renseigne `OPENAI_API_KEY` dans les variables d'environnement du service.
-Le serveur démarre avec Gunicorn et Render vérifie automatiquement `/health`.
+Le Blueprint prévoit Gunicorn et un contrôle `/health`. Le service Render existant doit encore être aligné sur cette configuration, comme indiqué dans l'audit.
 
 ## Tests
 
@@ -38,16 +49,16 @@ Le serveur démarre avec Gunicorn et Render vérifie automatiquement `/health`.
 GitHub Actions relance ces tests à chaque pull request et à chaque changement
 sur `main`.
 
-## Ce que fait la version commerciale
+## Ce que fait réellement la version actuelle
 
 - comptes clients sécurisés et données séparées
-- onboarding de marque très détaillé
+- onboarding de marque universel
 - génération personnalisée de Posts, Stories, Reels, offres et calendrier
 - historique des campagnes en base de données
 - essai de 7 jours et quotas par formule
 - abonnements Stripe Checkout et portail de facturation
 - connexion Instagram Business officielle avec jeton chiffré
-- mode validation ou autopilote
+- mode validation et préparation Autopilot ; le scheduler de production reste à déployer
 - protection CSRF, limitation de débit et cookies sécurisés
 
 ## Variables de production
@@ -83,5 +94,6 @@ URI de redirection Meta :
 Chaque client connecte son propre compte professionnel via Instagram Login.
 Le jeton est chiffré en base et l'autopilote reste désactivé jusqu'à l'accord
 explicite du client. Le Cron Job Render exécutera ensuite les publications dues,
-sans partager les accès entre les commerces. Le job vérifie les publications
-toutes les 15 minutes et retente au maximum trois fois en cas d'erreur.
+sans partager les accès entre les espaces. Le runner sait vérifier les publications
+dues et retenter au maximum trois fois. Le cron doit exister dans Render pour que
+cette exécution soit réellement automatique.
