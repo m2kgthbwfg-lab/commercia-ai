@@ -37,7 +37,7 @@ a{text-decoration:none;color:inherit}
   <header class="page-head"><div><div class="eyebrow">Vue d’ensemble</div><h1>Bonjour {{ user.first_name }}, votre semaine prend forme.</h1><p class="intro">Retrouvez ici votre planning, vos réglages et les contenus préparés pour {{ brand.business_name }}.</p></div><div class="date-chip">Formule {{ user.selected_plan|capitalize }}</div></header>
   {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flashbar {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
   <section class="overview">
-    <div class="card automation-card"><div class="automation-row"><div><div class="eyebrow" style="color:#efbd6d">Publication Instagram</div><h3 id="autoTitle">Configuration Instagram</h3></div><div id="autoState" class="automation-state"><span class="live-dot"></span>EN ATTENTE</div></div><div class="status-grid"><div class="status-item"><b id="autoTime">18:00</b><span>Publication</span></div><div class="status-item"><b>7/7</b><span>Jours actifs</span></div><div class="status-item"><b id="photoCount">0</b><span>Photos prêtes</span></div></div></div>
+    <div class="card automation-card"><div class="automation-row"><div><div class="eyebrow" style="color:#efbd6d">Publication Instagram</div><h3 id="autoTitle">Configuration Instagram</h3></div><div id="autoState" class="automation-state"><span class="live-dot"></span>EN ATTENTE</div></div><div class="status-grid"><div class="status-item"><b id="autoTime">18:00</b><span>Publication</span></div><div class="status-item"><b>7/7</b><span>Jours actifs</span></div><div class="status-item"><b id="photoCount">0</b><span>Photos prêtes</span></div></div><button type="button" id="autoToggle" onclick="toggleAutopilot()" hidden style="position:relative;z-index:1;margin-top:14px;background:#fff;color:#183127">Activer le pilote automatique</button></div>
     <div class="card week-card"><div><div class="eyebrow">Préparation</div><h3>Votre semaine</h3></div><div><div class="week-score">5 <small>contenus en préparation</small></div><div class="progress"><span></span></div></div></div>
   </section>
   <section class="content-layout">
@@ -57,7 +57,7 @@ a{text-decoration:none;color:inherit}
     </div>
     <aside class="card tip-card"><div class="eyebrow">Vos vraies photos</div><h3>Le vrai fait la différence.</h3><p>Ajoutez une photo simple de vos produits, de vos gestes ou de votre équipe. Commercia la réutilisera dans le calendrier.</p><div class="tip-list"><div class="tip"><span>✓</span>JPG, PNG ou WebP</div><div class="tip"><span>✓</span>Recadrage optimisé automatiquement</div><div class="tip"><span>✓</span>Bibliothèque privée par commerce</div></div><div class="media-upload"><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" onclick="uploadPhoto()" id="uploadBtn">Ajouter cette photo</button><div id="mediaStatus" class="media-status">{{ brand.media_assets|length }} photo(s) dans votre bibliothèque.</div></div></aside>
   </section>
-  <section class="result-shell" aria-live="polite"><div class="result-head"><h2>Votre campagne</h2><small>PRÊTE À RELIRE</small></div><div id="result" class="empty">Votre campagne personnalisée apparaîtra ici après la préparation.</div><div id="approvalPanel" class="card approval-panel" hidden><div class="panel-title"><div><h2>Validation avant Instagram</h2><p>Relisez la campagne et choisissez ce que vous souhaitez en faire.</p></div><span class="step-badge">Étape 2 sur 2</span></div><div class="approval-actions"><button type="button" class="secondary" onclick="copyCampaign()">Copier les textes</button><button type="button" class="secondary" onclick="downloadCampaign()">Télécharger le dossier</button><button type="button" class="success" onclick="approveCampaign()">Valider la campagne</button></div><div id="approvalStatus" class="approval-status"></div></div></section>
+  <section class="result-shell" aria-live="polite"><div class="result-head"><h2>Votre campagne</h2><small>PRÊTE À RELIRE</small></div><div id="result" class="empty">Votre campagne personnalisée apparaîtra ici après la préparation.</div><div id="approvalPanel" class="card approval-panel" hidden><div class="panel-title"><div><h2>Validation avant Instagram</h2><p>Relisez la campagne et choisissez ce que vous souhaitez en faire.</p></div><span class="step-badge">Étape 2 sur 2</span></div><div class="approval-actions"><button type="button" class="secondary" onclick="copyCampaign()">Copier les textes</button><button type="button" class="secondary" onclick="downloadCampaign()">Télécharger le dossier</button><button type="button" class="secondary" onclick="publishTest()">Publier 1 test</button><button type="button" class="success" onclick="approveCampaign()">Programmer les 7 publications</button></div><div id="approvalStatus" class="approval-status"></div></div></section>
   <div class="footer-note">Commercia · Votre communication, enfin régulière</div>
 </main>
 </div>
@@ -113,6 +113,25 @@ async function approveCampaign(){
     showApproval(`${json.scheduled} publication(s) programmée(s) ✓`);
   }catch(error){showApproval(error.message)}
 }
+async function publishTest(){
+  if(!confirm("Publier maintenant une vraie publication de test sur le compte Instagram connecté ?"))return;
+  try{
+    const csrfToken=document.querySelector('meta[name="csrf-token"]').content;
+    const response=await fetch("/api/instagram/test-publish",{method:"POST",headers:{"X-CSRFToken":csrfToken}});
+    const json=await response.json();if(!response.ok)throw new Error(json.error||"Le test a échoué.");
+    showApproval("Publication de test envoyée sur Instagram ✓");
+  }catch(error){showApproval(error.message)}
+}
+async function toggleAutopilot(){
+  const button=document.getElementById("autoToggle"),enable=button.dataset.enabled!=="true";
+  if(enable&&!confirm("Activer le pilote automatique quotidien ? Les publications déjà programmées pourront être publiées à l’heure prévue."))return;
+  try{
+    const csrfToken=document.querySelector('meta[name="csrf-token"]').content;
+    const response=await fetch("/api/automation/toggle",{method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":csrfToken},body:JSON.stringify({enabled:enable})});
+    const json=await response.json();if(!response.ok)throw new Error(json.error||"Le réglage a échoué.");
+    await loadAutomationStatus();
+  }catch(error){showApproval(error.message)}
+}
 function showApproval(message){const el=document.getElementById("approvalStatus");el.textContent=message;el.classList.add("show")}
 function activateCampaign(data,campaignId=null){
   currentCampaign=data;currentCampaignId=campaignId;
@@ -147,6 +166,7 @@ async function loadAutomationStatus(){
     document.getElementById("autoTime").textContent=status.publish_hour||"18:00";
     document.getElementById("photoCount").textContent=status.photo_count||0;
     const title=document.getElementById("autoTitle"),state=document.getElementById("autoState");
+    const toggle=document.getElementById("autoToggle");toggle.hidden=!status.connected;toggle.dataset.enabled=status.enabled?"true":"false";toggle.textContent=status.enabled?"Désactiver le pilote automatique":"Activer le pilote automatique";
     if(status.enabled&&status.connected){title.textContent="Instagram publie automatiquement";state.innerHTML='<span class="live-dot" style="background:#70efb3"></span>ACTIF'}
     else if(status.connected){title.textContent="Instagram connecté — activation finale requise";state.innerHTML='<span class="live-dot"></span>SÉCURISÉ'}
     else{title.textContent="Connexion Instagram à terminer";state.innerHTML='<span class="live-dot"></span>EN ATTENTE'}
