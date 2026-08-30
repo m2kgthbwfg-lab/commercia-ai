@@ -12,6 +12,15 @@ from models import ScheduledPost, db
 logger = logging.getLogger(__name__)
 
 
+def instagram_image_url(image_url):
+    """Return a public JPEG with an Instagram-safe 1:1 aspect ratio."""
+    marker = "/image/upload/"
+    if "res.cloudinary.com" in image_url and marker in image_url:
+        transformation = "c_fill,g_auto,h_1080,w_1080,f_jpg,q_auto"
+        return image_url.replace(marker, f"{marker}{transformation}/", 1)
+    return image_url
+
+
 def _graph_url(path):
     version = os.getenv("META_GRAPH_VERSION", "v26.0")
     return f"https://graph.instagram.com/{version}/{path.lstrip('/')}"
@@ -39,7 +48,7 @@ def _post_form(url, payload):
 def publish_photo(ig_user_id, access_token, image_url, caption):
     container = _post_form(
         _graph_url(f"{ig_user_id}/media"),
-        {"image_url": image_url, "caption": caption, "access_token": access_token},
+        {"image_url": instagram_image_url(image_url), "caption": caption, "access_token": access_token},
     )
     creation_id = container.get("id")
     if not creation_id:
