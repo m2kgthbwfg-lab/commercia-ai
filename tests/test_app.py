@@ -135,6 +135,8 @@ def test_signup_and_onboarding_flow():
     onboarding = test_client.post(
         "/onboarding",
         data={
+            "business_name": "Commercia AI",
+            "activity": "Assistant de communication Instagram",
             "location": "Paris & Ile-de-France",
             "audience": "Particuliers et entreprises",
             "description": "Créateur de plateaux de fruits sur mesure",
@@ -153,6 +155,11 @@ def test_signup_and_onboarding_flow():
     workspace = test_client.get("/workspace")
     assert workspace.status_code == 200
     assert b"Formule Pro" in workspace.data
+    assert b"Commercia AI" in workspace.data
+    with commercia.app.app_context():
+        brand = BrandProfile.query.one()
+        assert brand.business_name == "Commercia AI"
+        assert brand.activity == "Assistant de communication Instagram"
 
 
 def test_automation_is_disabled_by_default(monkeypatch):
