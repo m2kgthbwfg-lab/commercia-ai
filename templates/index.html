@@ -25,7 +25,7 @@ a{text-decoration:none;color:inherit}
   <div class="side-link"><span class="side-icon">◇</span>Ma semaine</div>
   <div class="side-link"><span class="side-icon">○</span>Bibliothèque</div>
   <div class="side-link"><span class="side-icon">↗</span>Résultats</div>
-  <div class="nav-label">Mon commerce</div>
+  <div class="nav-label">Mon identité</div>
   <a class="side-link" href="/onboarding"><span class="side-icon">✦</span>Identité de marque</a>
   <a class="side-link" href="/instagram/connect"><span class="side-icon">◎</span>Connexion Instagram</a>
   <a class="side-link" href="/billing/checkout/{{ user.selected_plan }}"><span class="side-icon">€</span>Abonnement</a>
@@ -42,9 +42,9 @@ a{text-decoration:none;color:inherit}
   </section>
   <section class="content-layout">
     <div class="card">
-      <div class="panel-title"><div><h2>Présentez votre actualité</h2><p>Ces informations servent uniquement à construire une semaine fidèle à votre commerce.</p></div><span class="step-badge">Étape 1 sur 2</span></div>
+      <div class="panel-title"><div><h2>Présentez votre actualité</h2><p>Ces informations servent à construire une semaine fidèle à votre activité et à votre audience.</p></div><span class="step-badge">Étape 1 sur 2</span></div>
       <div class="form-grid">
-        <div><label for="business">Nom du commerce</label><input id="business" value="{{ brand.business_name }}"></div>
+        <div><label for="business">Nom de la marque ou du projet</label><input id="business" value="{{ brand.business_name }}"></div>
         <div><label for="activity">Activité</label><input id="activity" value="{{ brand.activity }}"></div>
         <div><label for="location">Zone desservie</label><input id="location" value="{{ brand.location }}"></div>
         <div><label for="positioning">Image de marque</label><input id="positioning" value="{{ brand.tone }}"></div>
@@ -55,7 +55,7 @@ a{text-decoration:none;color:inherit}
       </div>
       <button type="button" onclick="generate()" id="btn">Préparer ma semaine →</button>
     </div>
-    <aside class="card tip-card"><div class="eyebrow">Vos vraies photos</div><h3>Le vrai fait la différence.</h3><p>Ajoutez une photo simple de vos produits, de vos gestes ou de votre équipe. Commercia la réutilisera dans le calendrier.</p><div class="tip-list"><div class="tip"><span>✓</span>JPG, PNG ou WebP</div><div class="tip"><span>✓</span>Recadrage optimisé automatiquement</div><div class="tip"><span>✓</span>Bibliothèque privée par commerce</div></div><div class="media-upload"><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" onclick="uploadPhoto()" id="uploadBtn">Ajouter cette photo</button><div id="mediaStatus" class="media-status">{{ brand.media_assets|length }} photo(s) dans votre bibliothèque.</div></div></aside>
+    <aside class="card tip-card"><div class="eyebrow">Vos vrais visuels</div><h3>Votre identité fait la différence.</h3><p>Ajoutez vos produits, services, réalisations, équipes ou créations. Commercia les réutilisera dans votre calendrier.</p><div class="tip-list"><div class="tip"><span>✓</span>JPG, PNG ou WebP</div><div class="tip"><span>✓</span>Recadrage optimisé automatiquement</div><div class="tip"><span>✓</span>Bibliothèque privée par espace</div></div><div class="media-upload"><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" onclick="uploadPhoto()" id="uploadBtn">Ajouter ce visuel</button><div id="mediaStatus" class="media-status">{{ brand.media_assets|length }} visuel(s) dans votre bibliothèque.</div></div></aside>
   </section>
   <section class="result-shell" aria-live="polite"><div class="result-head"><h2>Votre campagne</h2><small>PRÊTE À RELIRE</small></div><div id="result" class="empty">Votre campagne personnalisée apparaîtra ici après la préparation.</div><div id="approvalPanel" class="card approval-panel" hidden><div class="panel-title"><div><h2>Validation avant Instagram</h2><p>Relisez la campagne et choisissez ce que vous souhaitez en faire.</p></div><span class="step-badge">Étape 2 sur 2</span></div><div class="approval-actions"><button type="button" class="secondary" onclick="copyCampaign()">Copier les textes</button><button type="button" class="secondary" onclick="downloadCampaign()">Télécharger le dossier</button><button type="button" class="secondary" onclick="publishTest()">Publier 1 test</button><button type="button" class="success" onclick="approveCampaign()">Programmer les 7 publications</button></div><div id="approvalStatus" class="approval-status"></div></div></section>
   <div class="footer-note">Commercia · Votre communication, enfin régulière</div>
@@ -141,7 +141,7 @@ async function uploadPhoto(){
   const input=document.getElementById("mediaFile"),button=document.getElementById("uploadBtn"),status=document.getElementById("mediaStatus");
   if(!input.files.length){status.textContent="Choisissez d’abord une photo.";return}
   const body=new FormData();body.append("file",input.files[0]);button.disabled=true;button.textContent="Enregistrement...";
-  try{const csrfToken=document.querySelector('meta[name="csrf-token"]').content;const response=await fetch("/api/media",{method:"POST",headers:{"X-CSRFToken":csrfToken},body});const json=await response.json();if(!response.ok)throw new Error(json.error||"Échec de l’envoi.");status.textContent="Photo ajoutée à votre bibliothèque ✓";input.value="";loadAutomationStatus()}catch(error){status.textContent=error.message}finally{button.disabled=false;button.textContent="Ajouter cette photo"}
+  try{const csrfToken=document.querySelector('meta[name="csrf-token"]').content;const response=await fetch("/api/media",{method:"POST",headers:{"X-CSRFToken":csrfToken},body});const json=await response.json();if(!response.ok)throw new Error(json.error||"Échec de l’envoi.");status.textContent="Photo ajoutée à votre bibliothèque ✓";input.value="";loadAutomationStatus()}catch(error){status.textContent=error.message}finally{button.disabled=false;button.textContent="Ajouter ce visuel"}
 }
 async function generate(){
   const btn=document.getElementById("btn");
