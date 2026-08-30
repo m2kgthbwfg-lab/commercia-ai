@@ -47,7 +47,9 @@ def test_home_page_loads():
     response = client().get("/")
     assert response.status_code == 200
     assert b"Commercia" in response.data
-    assert b"communication avance" in response.data
+    assert b"r\xc3\xa9seaux sociaux avancent" in response.data
+    assert b"Cr\xc3\xa9ateurs, ind\xc3\xa9pendants, marques, entreprises et organisations" in response.data
+    assert b"commerces locaux" not in response.data
     assert b"7 jours" in response.data
 
 
