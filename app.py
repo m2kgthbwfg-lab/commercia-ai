@@ -201,6 +201,79 @@ def test_instagram_publish():
     return jsonify({"ok": True, "media_id": media_id})
 
 
+@app.post("/api/instagram/publish-batch")
+@login_required
+@limiter.limit("1 per hour")
+def publish_instagram_batch():
+    """Publish a small, explicitly confirmed launch batch without duplicates."""
+    data = request.get_json(silent=True) or {}
+    items = data.get("items")
+    if data.get("confirmation") != "PUBLIER" or not isinstance(items, list):
+        return jsonify({"error": "Confirmez la publication du lot avant de continuer."}), 400
+    if not 1 <= len(items) <= 9:
+        return jsonify({"error": "Le lot doit contenir entre 1 et 9 publications."}), 400
+    connection = current_user.brand.instagram_connection
+    if not connection:
+        return jsonify({"error": "Instagram doit être reconnecté avant la publication."}), 409
+
+    asset_ids = []
+    for item in items:
+        try:
+            asset_ids.append(int(item.get("asset_id")))
+        except (AttributeError, TypeError, ValueError):
+            return jsonify({"error": "Un visuel du lot est invalide."}), 400
+    assets = MediaAsset.query.filter(
+        MediaAsset.brand_id == current_user.brand.id,
+        MediaAsset.id.in_(asset_ids),
+    ).all()
+    assets_by_id = {asset.id: asset for asset in assets}
+    if len(assets_by_id) != len(set(asset_ids)):
+        return jsonify({"error": "Un visuel est introuvable dans votre bibliothèque."}), 400
+
+    published = []
+    for item, asset_id in zip(items, asset_ids):
+        caption = str(item.get("caption", "")).strip()
+        if not caption:
+            return jsonify({"error": "Chaque publication doit contenir un texte."}), 400
+        asset = assets_by_id[asset_id]
+        duplicate = ScheduledPost.query.filter_by(
+            brand_id=current_user.brand.id,
+            caption=caption,
+            media_url=asset.secure_url,
+            status="published",
+        ).first()
+        if duplicate:
+            published.append({"asset_id": asset.id, "media_id": duplicate.meta_media_id, "duplicate": True})
+            continue
+        try:
+            media_id = publish_photo(
+                connection.instagram_user_id,
+                decrypt_token(connection.token_ciphertext),
+                asset.secure_url,
+                caption,
+            )
+        except Exception as error:
+            app.logger.exception("Échec pendant la publication du lot Instagram")
+            return jsonify({
+                "error": "Instagram a interrompu le lot. Les publications déjà envoyées sont conservées.",
+                "detail": str(error)[:250],
+                "published": published,
+            }), 502
+        now = datetime.now(timezone.utc)
+        db.session.add(ScheduledPost(
+            brand_id=current_user.brand.id,
+            caption=caption,
+            media_url=asset.secure_url,
+            scheduled_at=now,
+            status="published",
+            meta_media_id=media_id,
+            published_at=now,
+        ))
+        db.session.commit()
+        published.append({"asset_id": asset.id, "media_id": media_id, "duplicate": False})
+    return jsonify({"ok": True, "published": published})
+
+
 @app.post("/api/generate")
 @login_required
 @limiter.limit("10 per minute")
