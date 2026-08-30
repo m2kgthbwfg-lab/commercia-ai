@@ -2,6 +2,7 @@
 
 import logging
 import os
+import time
 from datetime import datetime, timezone
 
 import requests
@@ -45,6 +46,32 @@ def _post_form(url, payload):
     return result
 
 
+def wait_for_container(creation_id, access_token, attempts=15, delay_seconds=2):
+    """Wait until Instagram has finished processing a media container."""
+    url = _graph_url(creation_id)
+    for _ in range(attempts):
+        response = requests.get(
+            url,
+            params={"fields": "status_code", "access_token": access_token},
+            timeout=30,
+        )
+        try:
+            result = response.json()
+        except ValueError:
+            response.raise_for_status()
+            raise RuntimeError("Instagram a renvoyé un statut de média illisible.")
+        if not response.ok or result.get("error"):
+            error = result.get("error", {})
+            raise RuntimeError(error.get("message", "Impossible de vérifier le média Instagram."))
+        status = result.get("status_code")
+        if status == "FINISHED":
+            return
+        if status in {"ERROR", "EXPIRED"}:
+            raise RuntimeError(f"Le traitement Instagram du média a échoué ({status}).")
+        time.sleep(delay_seconds)
+    raise RuntimeError("Instagram traite encore l’image. Réessayez dans quelques instants.")
+
+
 def publish_photo(ig_user_id, access_token, image_url, caption):
     container = _post_form(
         _graph_url(f"{ig_user_id}/media"),
@@ -53,6 +80,7 @@ def publish_photo(ig_user_id, access_token, image_url, caption):
     creation_id = container.get("id")
     if not creation_id:
         raise RuntimeError("Instagram n'a pas créé le conteneur média.")
+    wait_for_container(creation_id, access_token)
     published = _post_form(
         _graph_url(f"{ig_user_id}/media_publish"),
         {"creation_id": creation_id, "access_token": access_token},
