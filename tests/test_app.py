@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 import app as commercia
-from instagram_publisher import run_due_publications
+from instagram_publisher import instagram_image_url, run_due_publications
 from models import BrandProfile, Campaign, ScheduledPost, User, db
 
 
@@ -198,6 +198,17 @@ def test_publisher_skips_posts_while_autopilot_is_disabled():
         result = run_due_publications()
         assert result["skipped"] == 1
         assert db.session.get(ScheduledPost, post.id).status == "scheduled"
+
+
+def test_instagram_image_is_recropped_to_supported_square():
+    original = "https://res.cloudinary.com/demo/image/upload/v1/commercia/photo.png"
+    transformed = instagram_image_url(original)
+    assert "/image/upload/c_fill,g_auto,h_1080,w_1080,f_jpg,q_auto/" in transformed
+
+
+def test_non_cloudinary_image_url_is_unchanged():
+    original = "https://example.com/photo.jpg"
+    assert instagram_image_url(original) == original
 
 
 def test_campaign_requires_real_media_before_scheduling():
