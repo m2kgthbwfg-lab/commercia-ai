@@ -19,10 +19,20 @@ def _graph_url(path):
 
 def _post_form(url, payload):
     response = requests.post(url, data=payload, timeout=60)
-    response.raise_for_status()
-    result = response.json()
-    if result.get("error"):
-        raise RuntimeError(result["error"].get("message", "Erreur Instagram"))
+    try:
+        result = response.json()
+    except ValueError:
+        response.raise_for_status()
+        raise RuntimeError("Instagram a renvoyé une réponse illisible.")
+    if not response.ok or result.get("error"):
+        error = result.get("error", {})
+        message = error.get("message", "Erreur Instagram")
+        code = error.get("code")
+        subcode = error.get("error_subcode")
+        details = ", ".join(
+            part for part in [f"code {code}" if code else "", f"sous-code {subcode}" if subcode else ""] if part
+        )
+        raise RuntimeError(f"{message}{f' ({details})' if details else ''}")
     return result
 
 
