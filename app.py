@@ -87,6 +87,8 @@ def onboarding():
     brand = current_user.brand
     if request.method == "POST":
         required = {
+            "business_name": "le nom du commerce",
+            "activity": "votre activité",
             "location": "votre zone",
             "audience": "votre clientèle",
             "description": "la présentation du commerce",
