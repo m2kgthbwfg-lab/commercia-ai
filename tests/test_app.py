@@ -203,7 +203,7 @@ def test_publisher_skips_posts_while_autopilot_is_disabled():
 def test_instagram_image_is_recropped_to_supported_square():
     original = "https://res.cloudinary.com/demo/image/upload/v1/commercia/photo.png"
     transformed = instagram_image_url(original)
-    assert "/image/upload/c_fill,g_auto,h_1080,w_1080,f_jpg,q_auto/" in transformed
+    assert "/image/upload/c_pad,b_white,h_1080,w_1080,f_jpg,q_auto/" in transformed
 
 
 def test_non_cloudinary_image_url_is_unchanged():
