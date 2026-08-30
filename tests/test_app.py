@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 import app as commercia
-from instagram_publisher import instagram_image_url, run_due_publications
+from instagram_publisher import instagram_image_url, run_due_publications, wait_for_container
 from models import BrandProfile, Campaign, ScheduledPost, User, db
 
 
@@ -209,6 +209,22 @@ def test_instagram_image_is_recropped_to_supported_square():
 def test_non_cloudinary_image_url_is_unchanged():
     original = "https://example.com/photo.jpg"
     assert instagram_image_url(original) == original
+
+
+def test_instagram_container_waits_until_finished(monkeypatch):
+    class Response:
+        ok = True
+
+        def __init__(self, status):
+            self.status = status
+
+        def json(self):
+            return {"status_code": self.status}
+
+    responses = iter([Response("IN_PROGRESS"), Response("FINISHED")])
+    monkeypatch.setattr("instagram_publisher.requests.get", lambda *args, **kwargs: next(responses))
+    monkeypatch.setattr("instagram_publisher.time.sleep", lambda *_: None)
+    assert wait_for_container("container-id", "token", attempts=2) is None
 
 
 def test_campaign_requires_real_media_before_scheduling():
