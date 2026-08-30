@@ -3,7 +3,7 @@ from io import BytesIO
 
 import app as commercia
 from instagram_publisher import instagram_image_url, run_due_publications, wait_for_container
-from models import BrandProfile, Campaign, ScheduledPost, User, db
+from models import BrandProfile, Campaign, MediaAsset, ScheduledPost, User, db
 
 
 def client():
@@ -47,7 +47,7 @@ def test_home_page_loads():
     response = client().get("/")
     assert response.status_code == 200
     assert b"Commercia" in response.data
-    assert b"commerce m\xc3\xa9rite" in response.data
+    assert b"communication avance" in response.data
     assert b"7 jours" in response.data
 
 
@@ -178,6 +178,15 @@ def test_automation_status_requires_login():
     response = client().get("/api/automation/status")
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
+
+
+def test_batch_publish_requires_explicit_confirmation():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post("/api/instagram/publish-batch", json={"items": []})
+    assert response.status_code == 400
+    assert "Confirmez" in response.get_json()["error"]
 
 
 def test_automation_cannot_be_enabled_without_instagram():
