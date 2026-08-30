@@ -17,7 +17,7 @@ def instagram_image_url(image_url):
     """Return a public JPEG with an Instagram-safe 1:1 aspect ratio."""
     marker = "/image/upload/"
     if "res.cloudinary.com" in image_url and marker in image_url:
-        transformation = "c_fill,g_auto,h_1080,w_1080,f_jpg,q_auto"
+        transformation = "c_pad,b_white,h_1080,w_1080,f_jpg,q_auto"
         return image_url.replace(marker, f"{marker}{transformation}/", 1)
     return image_url
 

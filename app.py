@@ -194,6 +194,7 @@ def test_instagram_publish():
         meta_media_id=media_id,
         published_at=now,
     ))
+    campaign.status = "tested"
     db.session.commit()
     return jsonify({"ok": True, "media_id": media_id})
 
@@ -337,22 +338,34 @@ def approve_campaign(campaign_id):
     hour, minute = [int(part) for part in current_user.brand.publish_hour.split(":")]
     brand_timezone = ZoneInfo(current_user.brand.timezone)
     start = datetime.now(brand_timezone) + timedelta(days=1)
+    scheduled = 0
     for index, post in enumerate(posts):
         scheduled_at = (start + timedelta(days=index)).replace(hour=hour, minute=minute, second=0, microsecond=0).astimezone(timezone.utc)
         hashtags = post.get("hashtags", "")
         if isinstance(hashtags, list):
             hashtags = " ".join(hashtags)
         caption = "\n\n".join(part for part in [post.get("caption", ""), hashtags] if part)
+        asset = assets[index % len(assets)]
+        already_tested = ScheduledPost.query.filter(
+            ScheduledPost.brand_id == current_user.brand.id,
+            ScheduledPost.status == "published",
+            ScheduledPost.caption == caption,
+            ScheduledPost.media_url == asset.secure_url,
+            ScheduledPost.published_at >= datetime.now(timezone.utc) - timedelta(days=2),
+        ).first()
+        if already_tested:
+            continue
         db.session.add(ScheduledPost(
             brand_id=current_user.brand.id,
             caption=caption,
-            media_url=assets[index % len(assets)].secure_url,
+            media_url=asset.secure_url,
             scheduled_at=scheduled_at,
             status="scheduled",
         ))
+        scheduled += 1
     campaign.status = "scheduled"
     db.session.commit()
-    return jsonify({"ok": True, "scheduled": len(posts)})
+    return jsonify({"ok": True, "scheduled": scheduled})
 
 
 @app.get("/api/campaigns/latest")
