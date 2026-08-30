@@ -181,9 +181,9 @@ def test_instagram_publish():
             asset.secure_url,
             caption,
         )
-    except Exception:
+    except Exception as error:
         app.logger.exception("Échec de la publication Instagram de test")
-        return jsonify({"error": "Instagram a refusé la publication de test. Vérifiez les autorisations puis réessayez."}), 502
+        return jsonify({"error": f"Instagram a refusé le test : {str(error)[:300]}"}), 502
     now = datetime.now(timezone.utc)
     db.session.add(ScheduledPost(
         brand_id=brand.id,
