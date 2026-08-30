@@ -73,14 +73,23 @@ def test_health_reports_configuration(monkeypatch):
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("DATABASE_URL", raising=False)
     monkeypatch.delenv("STRIPE_SECRET_KEY", raising=False)
+    monkeypatch.delenv("META_APP_ID", raising=False)
+    monkeypatch.delenv("META_APP_SECRET", raising=False)
+    monkeypatch.delenv("SCHEDULER_ENABLED", raising=False)
     response = client().get("/health")
     assert response.status_code == 200
-    assert response.get_json() == {
-        "ok": True,
-        "ai_configured": False,
-        "database_configured": False,
-        "billing_configured": False,
+    payload = response.get_json()
+    assert payload["ok"] is True
+    assert payload["status"] == "healthy"
+    assert payload["checks"] == {
+        "ai": "warning",
+        "billing": "warning",
+        "database": "pass",
+        "instagram_oauth": "warning",
+        "scheduler": "warning",
     }
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
+    assert response.headers["X-Frame-Options"] == "DENY"
 
 
 def test_generate_requires_login(monkeypatch):
@@ -191,7 +200,18 @@ def test_batch_publish_requires_explicit_confirmation():
     assert "Confirmez" in response.get_json()["error"]
 
 
-def test_automation_cannot_be_enabled_without_instagram():
+def test_automation_cannot_be_enabled_without_scheduler(monkeypatch):
+    monkeypatch.delenv("SCHEDULER_ENABLED", raising=False)
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post("/api/automation/toggle", json={"enabled": True})
+    assert response.status_code == 503
+    assert "programmation serveur" in response.get_json()["error"]
+
+
+def test_automation_cannot_be_enabled_without_instagram(monkeypatch):
+    monkeypatch.setenv("SCHEDULER_ENABLED", "true")
     user_id = create_user()
     test_client = client()
     login_test_client(test_client, user_id)
