@@ -2,7 +2,8 @@ from datetime import datetime, timedelta, timezone
 from io import BytesIO
 
 import app as commercia
-from models import BrandProfile, Campaign, User, db
+from instagram_publisher import run_due_publications
+from models import BrandProfile, Campaign, ScheduledPost, User, db
 
 
 def client():
@@ -170,6 +171,33 @@ def test_automation_status_requires_login():
     response = client().get("/api/automation/status")
     assert response.status_code == 302
     assert "/login" in response.headers["Location"]
+
+
+def test_automation_cannot_be_enabled_without_instagram():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post("/api/automation/toggle", json={"enabled": True})
+    assert response.status_code == 409
+    assert "Instagram" in response.get_json()["error"]
+
+
+def test_publisher_skips_posts_while_autopilot_is_disabled():
+    user_id = create_user()
+    with commercia.app.app_context():
+        user = db.session.get(User, user_id)
+        post = ScheduledPost(
+            brand_id=user.brand.id,
+            caption="Publication de test",
+            media_url="https://example.com/photo.jpg",
+            scheduled_at=datetime.now(timezone.utc) - timedelta(minutes=1),
+            status="scheduled",
+        )
+        db.session.add(post)
+        db.session.commit()
+        result = run_due_publications()
+        assert result["skipped"] == 1
+        assert db.session.get(ScheduledPost, post.id).status == "scheduled"
 
 
 def test_campaign_requires_real_media_before_scheduling():
