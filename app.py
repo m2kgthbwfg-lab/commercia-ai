@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
+from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
 from auth import auth
 from billing import billing, stripe_ready
@@ -30,6 +31,9 @@ app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER") == "true"
 
+if os.getenv("RENDER") == "true" and app.config["SECRET_KEY"] == "development-only-change-me":
+    raise RuntimeError("SECRET_KEY must be configured in production")
+
 db.init_app(app)
 limiter.init_app(app)
 csrf = CSRFProtect(app)
@@ -40,6 +44,22 @@ app.register_blueprint(billing)
 app.register_blueprint(instagram)
 csrf.exempt(billing)
 limiter.exempt(billing)
+
+
+def scheduler_ready():
+    """Return true only when an external scheduler/worker is explicitly deployed."""
+    return os.getenv("SCHEDULER_ENABLED", "false").strip().lower() == "true"
+
+
+@app.after_request
+def add_security_headers(response):
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    if request.is_secure:
+        response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+    return response
 
 
 @login_manager.user_loader
@@ -120,12 +140,25 @@ def pricing():
 
 @app.get("/health")
 def health():
-    return {
-        "ok": True,
-        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
-        "database_configured": bool(os.getenv("DATABASE_URL")),
-        "billing_configured": stripe_ready(),
+    database_ok = True
+    try:
+        db.session.execute(text("SELECT 1"))
+    except Exception:
+        database_ok = False
+        db.session.rollback()
+        app.logger.exception("Database health check failed")
+    checks = {
+        "database": "pass" if database_ok else "fail",
+        "ai": "pass" if bool(os.getenv("OPENAI_API_KEY")) else "warning",
+        "instagram_oauth": "pass" if instagram_ready() else "warning",
+        "billing": "pass" if stripe_ready() else "warning",
+        "scheduler": "pass" if scheduler_ready() else "warning",
     }
+    return jsonify({
+        "ok": database_ok,
+        "status": "healthy" if database_ok else "unhealthy",
+        "checks": checks,
+    }), 200 if database_ok else 503
 
 @app.get("/api/automation/status")
 @login_required
@@ -133,7 +166,9 @@ def get_automation_status():
     brand = current_user.brand
     connection = brand.instagram_connection
     return jsonify({
-        "enabled": bool(brand.autopilot_enabled),
+        "enabled": bool(brand.autopilot_enabled and scheduler_ready()),
+        "requested": bool(brand.autopilot_enabled),
+        "scheduler_ready": scheduler_ready(),
         "connected": bool(connection),
         "mode": "automatic",
         "publish_hour": brand.publish_hour,
@@ -148,6 +183,10 @@ def get_automation_status():
 def toggle_automation():
     enabled = bool((request.get_json(silent=True) or {}).get("enabled"))
     brand = current_user.brand
+    if enabled and not scheduler_ready():
+        return jsonify({
+            "error": "Le pilote automatique n’est pas encore disponible : le service de programmation serveur doit être activé."
+        }), 503
     if enabled and not brand.instagram_connection:
         return jsonify({"error": "Connectez Instagram avant d’activer le pilote automatique."}), 409
     if enabled and not brand.media_assets:
