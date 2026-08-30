@@ -1,20 +1,60 @@
 
 import os, json
-from flask import Flask, render_template, request, jsonify
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
+import cloudinary.uploader
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
 from dotenv import load_dotenv
 from openai import OpenAI
-from instagram_publisher import automation_status
+from flask_login import LoginManager, current_user, login_required
+from flask_wtf.csrf import CSRFProtect
+from werkzeug.middleware.proxy_fix import ProxyFix
+from auth import auth
+from billing import billing, stripe_ready
+from extensions import limiter
+from instagram_oauth import instagram, instagram_ready
+from models import Campaign, MediaAsset, ScheduledPost, UsageEvent, User, db
 
 load_dotenv()
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 32 * 1024
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "development-only-change-me")
+database_url = os.getenv("DATABASE_URL", "sqlite:///commercia.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER") == "true"
+
+db.init_app(app)
+limiter.init_app(app)
+csrf = CSRFProtect(app)
+login_manager = LoginManager(app)
+login_manager.login_view = "auth.login"
+app.register_blueprint(auth)
+app.register_blueprint(billing)
+app.register_blueprint(instagram)
+csrf.exempt(billing)
+limiter.exempt(billing)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
+
+
+with app.app_context():
+    db.create_all()
 
 SYSTEM = """Tu es Commercia AI, un community manager expert pour commerces de proximité.
 Tu crées des contenus concrets, commerciaux, élégants, non génériques et immédiatement publiables.
 Tu écris toujours en français. Tu évites les promesses excessives. Tu adaptes le ton à la marque.
 Réponds UNIQUEMENT en JSON valide avec les clés:
 summary, posts, reels, stories, calendar, review_reply, commercial_offer.
-posts = tableau de 3 objets {title, caption, hashtags, cta}
+posts = tableau de 3 à 7 objets {title, caption, hashtags, cta}
 reels = tableau de 2 objets {title, hook, shots, overlay_text, caption}
 stories = tableau de 4 objets {title, content, interaction}
 calendar = tableau de 7 objets {day, content_type, topic, goal}
@@ -28,33 +68,115 @@ def index():
 
 
 @app.get("/app")
+@login_required
 def dashboard():
-    return render_template("index.html")
+    return redirect(url_for("workspace"))
+
+@app.get("/workspace")
+@login_required
+def workspace():
+    if not current_user.onboarding_complete:
+        return redirect(url_for("onboarding"))
+    return render_template("index.html", user=current_user, brand=current_user.brand)
+
+
+@app.route("/onboarding", methods=["GET", "POST"])
+@login_required
+def onboarding():
+    brand = current_user.brand
+    if request.method == "POST":
+        required = {
+            "location": "votre zone",
+            "audience": "votre clientèle",
+            "description": "la présentation du commerce",
+            "differentiators": "vos points forts",
+            "products": "vos produits ou services",
+            "communication_goals": "votre objectif",
+        }
+        values = {key: request.form.get(key, "").strip() for key in required}
+        missing = [label for key, label in required.items() if not values[key]]
+        if missing:
+            flash("Complétez " + ", ".join(missing) + ".", "error")
+        else:
+            for key, value in values.items():
+                setattr(brand, key, value)
+            for key in ["tone", "values", "visual_style", "preferred_formats", "prohibited_topics", "seasonality", "brand_keywords", "website_url", "instagram_handle", "publish_hour"]:
+                setattr(brand, key, request.form.get(key, "").strip())
+            brand.approval_required = request.form.get("automation_mode") != "autopilot"
+            current_user.onboarding_complete = True
+            db.session.commit()
+            return redirect(url_for("workspace"))
+    return render_template("onboarding.html", brand=brand, user=current_user)
+
+
+@app.get("/pricing")
+def pricing():
+    return redirect(url_for("index", _anchor="tarifs"))
+
 
 @app.get("/health")
 def health():
-    return {"ok": True, "ai_configured": bool(os.getenv("OPENAI_API_KEY"))}
+    return {
+        "ok": True,
+        "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        "database_configured": bool(os.getenv("DATABASE_URL")),
+        "billing_configured": stripe_ready(),
+    }
 
 @app.get("/api/automation/status")
+@login_required
 def get_automation_status():
-    return jsonify(automation_status())
+    brand = current_user.brand
+    connection = brand.instagram_connection
+    return jsonify({
+        "enabled": bool(brand.autopilot_enabled),
+        "connected": bool(connection),
+        "mode": "automatic",
+        "publish_hour": brand.publish_hour,
+        "photo_count": len(brand.media_assets),
+        "username": connection.username if connection else "",
+        "oauth_configured": instagram_ready(),
+    })
 
 
 @app.post("/api/generate")
+@login_required
+@limiter.limit("10 per minute")
 def generate():
     if not os.getenv("OPENAI_API_KEY"):
         return jsonify({
             "error": "OPENAI_API_KEY manquante. Ajoute-la dans le fichier .env puis redémarre l'application."
         }), 400
 
+    if not current_user.onboarding_complete:
+        return jsonify({"error": "Terminez d’abord la personnalisation de votre commerce."}), 409
+    trial_ends_at = current_user.trial_ends_at
+    if trial_ends_at and trial_ends_at.tzinfo is None:
+        trial_ends_at = trial_ends_at.replace(tzinfo=timezone.utc)
+    trial_expired = current_user.subscription_status == "trialing" and trial_ends_at < datetime.now(timezone.utc)
+    if current_user.subscription_status not in {"active", "trialing"} or trial_expired:
+        return jsonify({"error": "Votre essai ou abonnement n’est plus actif."}), 402
+
+    month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    generation_count = UsageEvent.query.filter(
+        UsageEvent.user_id == current_user.id,
+        UsageEvent.event_type == "campaign_generated",
+        UsageEvent.created_at >= month_start,
+    ).count()
+    monthly_limits = {"essential": 12, "autopilot": 31, "pro": 60}
+    limit = 3 if current_user.subscription_status == "trialing" else monthly_limits.get(current_user.selected_plan, 12)
+    if generation_count >= limit:
+        return jsonify({"error": "Votre quota mensuel est atteint. Passez à la formule supérieure pour continuer."}), 429
+
     data = request.get_json(silent=True)
     if not isinstance(data, dict):
         return jsonify({"error": "Requête JSON invalide."}), 400
-    business = data.get("business", "Sur un Plateau")
-    activity = data.get("activity", "Plateaux de fruits raffinés et événementiel")
-    location = data.get("location", "Paris & Île-de-France")
-    positioning = data.get("positioning", "Premium, artisanal, frais, élégant")
-    audience = data.get("audience", "Particuliers et entreprises")
+    brand = current_user.brand
+    business = data.get("business") or brand.business_name
+    activity = data.get("activity") or brand.activity
+    location = data.get("location") or brand.location
+    positioning = data.get("positioning") or brand.tone
+    audience = data.get("audience") or brand.audience
     offer = data.get("offer", "Créations de fruits frais sur commande")
     objective = data.get("objective", "Obtenir plus de demandes de devis et de commandes par Instagram")
     notes = data.get("notes", "")
@@ -68,8 +190,19 @@ CIBLE: {audience}
 OFFRE À POUSSER: {offer}
 OBJECTIF: {objective}
 NOTES: {notes}
+FORMULE: {current_user.selected_plan}
+PRÉSENTATION: {brand.description}
+VALEURS: {brand.values}
+POINTS FORTS: {brand.differentiators}
+PRODUITS ET SERVICES: {brand.products}
+STYLE VISUEL: {brand.visual_style}
+FORMATS PRÉFÉRÉS: {brand.preferred_formats}
+SAISONNALITÉ: {brand.seasonality}
+MOTS À PRIVILÉGIER: {brand.brand_keywords}
+SUJETS À ÉVITER: {brand.prohibited_topics}
 
 Conçois une campagne Instagram complète de 7 jours.
+Crée 3 publications pour la formule essential et 7 publications pour les formules autopilot ou pro.
 Pour cette marque, privilégie la valeur visuelle, le savoir-faire artisanal, les coulisses,
 les créations sur mesure et les appels à la commande par message privé.
 Les hashtags doivent être crédibles et peu spammy.
@@ -87,13 +220,89 @@ Les hashtags doivent être crédibles et peu spammy.
         )
         raw = response.output_text
         result = json.loads(raw)
-        return jsonify({"ok": True, "result": result})
+        campaign = Campaign(brand_id=brand.id, brief_json=data, result_json=result)
+        db.session.add(campaign)
+        db.session.add(UsageEvent(user_id=current_user.id, event_type="campaign_generated"))
+        db.session.commit()
+        return jsonify({"ok": True, "result": result, "campaign_id": campaign.id})
     except json.JSONDecodeError:
         app.logger.exception("La réponse OpenAI n'est pas un JSON valide")
         return jsonify({"error": "L'IA a renvoyé une réponse invalide. Réessaie dans quelques instants."}), 502
     except Exception:
         app.logger.exception("Échec de génération OpenAI")
         return jsonify({"error": "La génération a échoué. Vérifie la clé API et réessaie."}), 502
+
+
+@app.post("/api/media")
+@login_required
+@limiter.limit("20 per hour")
+def upload_media():
+    if not os.getenv("CLOUDINARY_URL"):
+        return jsonify({"error": "Le stockage des photos est en cours de configuration."}), 503
+    uploaded_file = request.files.get("file")
+    if not uploaded_file or not uploaded_file.filename:
+        return jsonify({"error": "Choisissez une photo."}), 400
+    if uploaded_file.mimetype not in {"image/jpeg", "image/png", "image/webp"}:
+        return jsonify({"error": "Format accepté : JPG, PNG ou WebP."}), 400
+    try:
+        result = cloudinary.uploader.upload(
+            uploaded_file,
+            folder=f"commercia/brands/{current_user.brand.id}",
+            resource_type="image",
+            transformation=[{"width": 1440, "height": 1440, "crop": "limit", "quality": "auto", "fetch_format": "auto"}],
+        )
+        asset = MediaAsset(
+            brand_id=current_user.brand.id,
+            public_id=result["public_id"],
+            secure_url=result["secure_url"],
+            original_filename=uploaded_file.filename[:255],
+        )
+        db.session.add(asset)
+        db.session.commit()
+        return jsonify({"ok": True, "asset": {"id": asset.id, "url": asset.secure_url}})
+    except Exception:
+        app.logger.exception("Échec de stockage du média")
+        return jsonify({"error": "La photo n’a pas pu être enregistrée."}), 502
+
+
+@app.post("/api/campaigns/<int:campaign_id>/approve")
+@login_required
+def approve_campaign(campaign_id):
+    campaign = Campaign.query.filter_by(id=campaign_id, brand_id=current_user.brand.id).first_or_404()
+    if campaign.status == "scheduled":
+        return jsonify({"error": "Cette campagne est déjà programmée."}), 409
+    assets = MediaAsset.query.filter_by(brand_id=current_user.brand.id).order_by(MediaAsset.created_at.desc()).all()
+    if not assets:
+        return jsonify({"error": "Ajoutez au moins une vraie photo avant de programmer la campagne."}), 409
+    posts = campaign.result_json.get("posts", [])
+    hour, minute = [int(part) for part in current_user.brand.publish_hour.split(":")]
+    brand_timezone = ZoneInfo(current_user.brand.timezone)
+    start = datetime.now(brand_timezone) + timedelta(days=1)
+    for index, post in enumerate(posts):
+        scheduled_at = (start + timedelta(days=index)).replace(hour=hour, minute=minute, second=0, microsecond=0).astimezone(timezone.utc)
+        hashtags = post.get("hashtags", "")
+        if isinstance(hashtags, list):
+            hashtags = " ".join(hashtags)
+        caption = "\n\n".join(part for part in [post.get("caption", ""), hashtags] if part)
+        db.session.add(ScheduledPost(
+            brand_id=current_user.brand.id,
+            caption=caption,
+            media_url=assets[index % len(assets)].secure_url,
+            scheduled_at=scheduled_at,
+            status="scheduled",
+        ))
+    campaign.status = "scheduled"
+    db.session.commit()
+    return jsonify({"ok": True, "scheduled": len(posts)})
+
+
+@app.get("/api/campaigns/latest")
+@login_required
+def latest_campaign():
+    campaign = Campaign.query.filter_by(brand_id=current_user.brand.id).order_by(Campaign.created_at.desc()).first()
+    if not campaign:
+        return jsonify({"campaign": None})
+    return jsonify({"campaign_id": campaign.id, "campaign": campaign.result_json, "status": campaign.status})
 
 if __name__ == "__main__":
     app.run(

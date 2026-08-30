@@ -1,4 +1,4 @@
-# Commercia AI — version réelle connectée à OpenAI
+# Commercia — SaaS de communication pour commerces locaux
 
 Cette version appelle réellement l'API OpenAI depuis le serveur.
 
@@ -38,41 +38,50 @@ Le serveur démarre avec Gunicorn et Render vérifie automatiquement `/health`.
 GitHub Actions relance ces tests à chaque pull request et à chaque changement
 sur `main`.
 
-## Ce que fait la version
-- Profil Sur un Plateau prérempli
-- Appel réel à OpenAI Responses API
-- 3 posts Instagram
-- 2 concepts de Reels
-- 4 Stories
-- calendrier 7 jours
-- réponse à un avis Google
-- offre commerciale
-- affichage instantané dans le dashboard
+## Ce que fait la version commerciale
 
-## Pour passer au SaaS vendable
-Il restera à ajouter :
-- comptes utilisateurs / connexion
-- Stripe
-- base de données
-- stockage de photos / vidéos
-- connexion Meta/Instagram pour publication
-- historique des campagnes
-- analytics
-- RGPD / CGV / politique de confidentialité
+- comptes clients sécurisés et données séparées
+- onboarding de marque très détaillé
+- génération personnalisée de Posts, Stories, Reels, offres et calendrier
+- historique des campagnes en base de données
+- essai de 7 jours et quotas par formule
+- abonnements Stripe Checkout et portail de facturation
+- connexion Instagram Business officielle avec jeton chiffré
+- mode validation ou autopilote
+- protection CSRF, limitation de débit et cookies sécurisés
+
+## Variables de production
+
+Obligatoires pour ouvrir les inscriptions :
+
+- `SECRET_KEY`
+- `DATABASE_URL` (URL interne PostgreSQL Render)
+- `OPENAI_API_KEY`
+- `TOKEN_ENCRYPTION_KEY` (clé Fernet)
+- `CLOUDINARY_URL` (bibliothèque de photos)
+
+Pour les abonnements :
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_PRICE_ESSENTIAL`
+- `STRIPE_PRICE_AUTOPILOT`
+- `STRIPE_PRICE_PRO`
+
+Pour Instagram Login :
+
+- `META_APP_ID`
+- `META_APP_SECRET`
+
+URI de redirection Meta :
+
+    https://commercia-ai.onrender.com/instagram/callback
 
 
 ## Publication Instagram automatique
 
-Le dépôt contient désormais un moteur de publication Instagram via l'API Meta et
-un Cron Job Render quotidien. La publication reste désactivée tant que
-`AUTO_PUBLISH_ENABLED` n'est pas réglé sur `true`.
-
-Variables nécessaires :
-
-- `META_IG_USER_ID`
-- `META_ACCESS_TOKEN`
-- `INSTAGRAM_PHOTO_URLS` (URLs publiques séparées par des virgules)
-- `AUTO_PUBLISH_ENABLED=true` seulement après un test contrôlé
-
-Le compte Instagram professionnel doit être relié à une Page Facebook technique.
-Le Cron Job est configuré à 17:00 UTC, soit 18:00 en heure d'hiver à Paris.
+Chaque client connecte son propre compte professionnel via Instagram Login.
+Le jeton est chiffré en base et l'autopilote reste désactivé jusqu'à l'accord
+explicite du client. Le Cron Job Render exécutera ensuite les publications dues,
+sans partager les accès entre les commerces. Le job vérifie les publications
+toutes les 15 minutes et retente au maximum trois fois en cas d'erreur.
