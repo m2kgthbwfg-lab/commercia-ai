@@ -50,8 +50,9 @@ def load_user(user_id):
 with app.app_context():
     db.create_all()
 
-SYSTEM = """Tu es Commercia AI, un community manager expert pour commerces de proximité.
-Tu crées des contenus concrets, commerciaux, élégants, non génériques et immédiatement publiables.
+SYSTEM = """Tu es Commercia AI, un stratège éditorial et social media universel.
+Tu adaptes ton intelligence à toute activité, marque, entreprise, organisation ou créateur, quel que soit son secteur.
+Tu crées des contenus concrets, crédibles, élégants, non génériques et immédiatement publiables.
 Tu écris toujours en français. Tu évites les promesses excessives. Tu adaptes le ton à la marque.
 Réponds UNIQUEMENT en JSON valide avec les clés:
 summary, posts, reels, stories, calendar, review_reply, commercial_offer.
@@ -87,11 +88,11 @@ def onboarding():
     brand = current_user.brand
     if request.method == "POST":
         required = {
-            "business_name": "le nom du commerce",
+            "business_name": "le nom de votre marque, entreprise ou projet",
             "activity": "votre activité",
             "location": "votre zone",
-            "audience": "votre clientèle",
-            "description": "la présentation du commerce",
+            "audience": "votre audience",
+            "description": "la présentation de votre activité",
             "differentiators": "vos points forts",
             "products": "vos produits ou services",
             "communication_goals": "votre objectif",
@@ -284,7 +285,7 @@ def generate():
         }), 400
 
     if not current_user.onboarding_complete:
-        return jsonify({"error": "Terminez d’abord la personnalisation de votre commerce."}), 409
+        return jsonify({"error": "Terminez d’abord la personnalisation de votre activité."}), 409
     trial_ends_at = current_user.trial_ends_at
     if trial_ends_at and trial_ends_at.tzinfo is None:
         trial_ends_at = trial_ends_at.replace(tzinfo=timezone.utc)
@@ -312,8 +313,8 @@ def generate():
     location = data.get("location") or brand.location
     positioning = data.get("positioning") or brand.tone
     audience = data.get("audience") or brand.audience
-    offer = data.get("offer", "Créations de fruits frais sur commande")
-    objective = data.get("objective", "Obtenir plus de demandes de devis et de commandes par Instagram")
+    offer = data.get("offer", "Votre offre, expertise ou actualité principale")
+    objective = data.get("objective", "Développer la visibilité, l’engagement et les opportunités grâce aux réseaux sociaux")
     notes = data.get("notes", "")
 
     prompt = f"""
@@ -336,10 +337,13 @@ SAISONNALITÉ: {brand.seasonality}
 MOTS À PRIVILÉGIER: {brand.brand_keywords}
 SUJETS À ÉVITER: {brand.prohibited_topics}
 
-Conçois une campagne Instagram complète de 7 jours.
+Conçois une campagne social media complète de 7 jours, optimisée pour Instagram.
 Crée 3 publications pour la formule essential et 7 publications pour les formules autopilot ou pro.
-Pour cette marque, privilégie la valeur visuelle, le savoir-faire artisanal, les coulisses,
-les créations sur mesure et les appels à la commande par message privé.
+Détecte le secteur, le modèle d’activité et le profil de l’utilisateur à partir de ses réponses.
+Adapte entièrement la stratégie, les formats et les angles à son audience, ses objectifs, ses offres,
+son identité et ses réseaux. Varie expertise, preuve, pédagogie, coulisses, actualité, communauté et
+conversion selon ce profil. N’applique jamais une recette propre à un métier si elle n’est pas pertinente.
+Évite les stéréotypes sectoriels, les banalités et les promesses vagues.
 Les hashtags doivent être crédibles et peu spammy.
 """
 
