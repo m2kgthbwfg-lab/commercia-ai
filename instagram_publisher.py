@@ -52,6 +52,11 @@ def run_due_publications(now=None):
     ).order_by(ScheduledPost.scheduled_at).limit(50).all()
     results = {"published": 0, "failed": 0, "skipped": 0}
     for post in due_posts:
+        if not post.brand.autopilot_enabled:
+            post.last_error = "Pilote automatique désactivé"
+            results["skipped"] += 1
+            db.session.commit()
+            continue
         connection = post.brand.instagram_connection
         if not connection:
             post.last_error = "Compte Instagram non connecté"

@@ -12,7 +12,8 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from auth import auth
 from billing import billing, stripe_ready
 from extensions import limiter
-from instagram_oauth import instagram, instagram_ready
+from instagram_oauth import decrypt_token, instagram, instagram_ready
+from instagram_publisher import publish_photo
 from models import Campaign, MediaAsset, ScheduledPost, UsageEvent, User, db
 
 load_dotenv()
@@ -137,6 +138,64 @@ def get_automation_status():
         "username": connection.username if connection else "",
         "oauth_configured": instagram_ready(),
     })
+
+
+@app.post("/api/automation/toggle")
+@login_required
+def toggle_automation():
+    enabled = bool((request.get_json(silent=True) or {}).get("enabled"))
+    brand = current_user.brand
+    if enabled and not brand.instagram_connection:
+        return jsonify({"error": "Connectez Instagram avant d’activer le pilote automatique."}), 409
+    if enabled and not brand.media_assets:
+        return jsonify({"error": "Ajoutez au moins une photo avant d’activer le pilote automatique."}), 409
+    brand.autopilot_enabled = enabled
+    db.session.commit()
+    return jsonify({"ok": True, "enabled": enabled})
+
+
+@app.post("/api/instagram/test-publish")
+@login_required
+@limiter.limit("3 per hour")
+def test_instagram_publish():
+    brand = current_user.brand
+    connection = brand.instagram_connection
+    asset = MediaAsset.query.filter_by(brand_id=brand.id).order_by(MediaAsset.created_at.desc()).first()
+    campaign = Campaign.query.filter_by(brand_id=brand.id).order_by(Campaign.created_at.desc()).first()
+    posts = campaign.result_json.get("posts", []) if campaign else []
+    if not connection:
+        return jsonify({"error": "Instagram n’est pas connecté."}), 409
+    if not asset:
+        return jsonify({"error": "Ajoutez une photo avant le test."}), 409
+    if not posts:
+        return jsonify({"error": "Préparez une campagne avant le test."}), 409
+    post = posts[0]
+    hashtags = post.get("hashtags", "")
+    if isinstance(hashtags, list):
+        hashtags = " ".join(hashtags)
+    caption = "\n\n".join(part for part in [post.get("caption", ""), hashtags] if part)
+    try:
+        media_id = publish_photo(
+            connection.instagram_user_id,
+            decrypt_token(connection.token_ciphertext),
+            asset.secure_url,
+            caption,
+        )
+    except Exception:
+        app.logger.exception("Échec de la publication Instagram de test")
+        return jsonify({"error": "Instagram a refusé la publication de test. Vérifiez les autorisations puis réessayez."}), 502
+    now = datetime.now(timezone.utc)
+    db.session.add(ScheduledPost(
+        brand_id=brand.id,
+        caption=caption,
+        media_url=asset.secure_url,
+        scheduled_at=now,
+        status="published",
+        meta_media_id=media_id,
+        published_at=now,
+    ))
+    db.session.commit()
+    return jsonify({"ok": True, "media_id": media_id})
 
 
 @app.post("/api/generate")
