@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f0e7">
+<title>{% if page == 'mentions' %}Mentions légales{% elif page == 'privacy' %}Confidentialité{% else %}Conditions d’utilisation{% endif %} · Commercia</title>
+<style>:root{--paper:#f5f0e7;--white:#fffdf8;--ink:#14251f;--muted:#627069;--line:#d9d4ca;--coral:#d45f4d}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.top{height:76px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 max(22px,calc((100% - 860px)/2))}.logo{font-weight:900;color:inherit;text-decoration:none}.back{font-size:13px;color:var(--muted)}main{width:min(860px,calc(100% - 32px));margin:55px auto 90px;background:var(--white);border:1px solid var(--line);border-radius:12px;padding:clamp(25px,6vw,62px)}.eyebrow{font-size:10px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:#a94337}h1,h2{font-family:Georgia,serif;font-weight:500}h1{font-size:clamp(38px,6vw,58px);margin:13px 0 15px}h2{font-size:25px;margin:34px 0 10px}p,li{color:#4e5e56;line-height:1.72;font-size:14px}.notice{background:#f6e7e2;border:1px solid #e4b5ab;padding:15px;border-radius:7px;color:#81392f;margin:22px 0}a{color:var(--ink)}</style></head>
+<body><header class="top"><a class="logo" href="/">● Commercia</a><a class="back" href="/">Retour au site</a></header><main>
+{% if page == 'mentions' %}
+<div class="eyebrow">Informations de l’éditeur</div><h1>Mentions légales</h1>
+{% if not legal.registration or not legal.address or not legal.director %}<div class="notice">Les informations juridiques définitives de l’éditeur doivent être renseignées avant l’ouverture commerciale.</div>{% endif %}
+<h2>Éditeur</h2><p><strong>{{ legal.name }}</strong>{% if legal.legal_form %}, {{ legal.legal_form }}{% endif %}<br>{% if legal.registration %}Immatriculation : {{ legal.registration }}<br>{% endif %}{% if legal.address %}Siège : {{ legal.address }}<br>{% endif %}{% if legal.director %}Direction de la publication : {{ legal.director }}<br>{% endif %}Contact : <a href="mailto:{{ legal.email }}">{{ legal.email }}</a></p>
+<h2>Hébergement</h2><p>{{ legal.host }}.</p><h2>Propriété intellectuelle</h2><p>La marque, l’interface, les textes et les éléments graphiques de Commercia sont protégés. Toute reproduction non autorisée est interdite.</p>
+{% elif page == 'privacy' %}
+<div class="eyebrow">Protection des données</div><h1>Politique de confidentialité</h1><p>Dernière mise à jour : 31 août 2026.</p>
+<h2>Données traitées</h2><p>Commercia traite les informations de compte, le profil de marque, les contenus générés, les médias ajoutés, les programmations et les identifiants techniques nécessaires aux connexions autorisées par l’utilisateur.</p>
+<h2>Finalités</h2><p>Ces données servent à fournir le service, personnaliser les contenus, programmer les publications, sécuriser les comptes, gérer les abonnements et assister les utilisateurs.</p>
+<h2>Prestataires</h2><p>Le service s’appuie notamment sur Render pour l’hébergement, PostgreSQL pour les données, Cloudinary pour les médias, OpenAI pour la génération, Meta pour Instagram et Stripe pour la facturation lorsqu’elle est activée.</p>
+<h2>Conservation et droits</h2><p>Les données sont conservées pendant la durée du compte puis supprimées selon les obligations applicables. Depuis « Mon compte », l’utilisateur peut exporter ses données et demander leur suppression. Pour toute demande : <a href="mailto:{{ legal.email }}">{{ legal.email }}</a>.</p>
+<h2>Sécurité</h2><p>Commercia ne demande jamais le mot de passe Instagram. Les jetons d’accès sont chiffrés et la connexion s’effectue via les mécanismes officiels de Meta.</p>
+{% else %}
+<div class="eyebrow">Cadre du service</div><h1>Conditions d’utilisation</h1><p>Dernière mise à jour : 31 août 2026.</p>
+<h2>Objet</h2><p>Commercia est un assistant de création, d’organisation et de programmation de contenus pour les réseaux sociaux. Le service reste un outil d’assistance : l’utilisateur demeure responsable des contenus validés et publiés.</p>
+<h2>Compte et accès</h2><p>L’utilisateur fournit des informations exactes, protège ses accès et utilise uniquement des comptes et médias qu’il est autorisé à exploiter.</p>
+<h2>Essai et abonnement</h2><p>L’essai annoncé dure sept jours. Après l’essai, l’accès aux fonctions payantes nécessite un abonnement. Les prix et capacités applicables sont ceux affichés au moment de la souscription. La résiliation s’effectue depuis le portail de facturation et prend effet selon les modalités Stripe indiquées lors de l’achat.</p>
+<h2>Publication et automatisation</h2><p>Le mode Validation exige une action de l’utilisateur. Le mode Autopilote ne fonctionne qu’après activation explicite et peut être désactivé. Une publication est considérée comme publiée uniquement après confirmation de l’API du réseau concerné.</p>
+<h2>Usages interdits</h2><p>Sont interdits les contenus illicites, trompeurs, contrefaisants, discriminatoires ou portant atteinte aux droits de tiers, ainsi que toute tentative de détournement ou d’accès non autorisé.</p>
+<h2>Disponibilité</h2><p>Commercia met en œuvre des moyens raisonnables pour assurer le service, sans garantir une disponibilité permanente des services tiers. Les limitations ou refus des API Meta, OpenAI, Cloudinary, Stripe ou Render peuvent affecter certaines fonctions.</p>
+<h2>Contact</h2><p>Questions contractuelles : <a href="mailto:{{ legal.email }}">{{ legal.email }}</a>.</p>
+{% endif %}
+</main></body></html>
