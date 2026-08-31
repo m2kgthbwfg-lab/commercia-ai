@@ -7,6 +7,7 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Mon espace — Commercia</title>
 <style>
+.network-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.network-card{padding:15px;border:1px solid var(--line);border-radius:6px;background:#fcfaf5}.network-card b{display:block;font-family:Georgia,serif;font-size:18px;font-weight:500}.network-card small{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin:5px 0 10px}.network-state{font-size:9px;font-weight:850;text-transform:uppercase;letter-spacing:.5px;color:var(--coral2)}.network-state.connected{color:#2c6b45}.pilot-action{display:flex;gap:12px;align-items:center;margin-top:16px;padding:15px;background:#eef3ed;border:1px solid #c5d2c4;border-radius:6px}.pilot-action p{margin:0;font-size:12px;line-height:1.5;color:#53645a;flex:1}.pilot-action button{width:auto;margin:0;white-space:nowrap;background:var(--ink)}
 :root{--paper:#f5f1e8;--white:#fffdf9;--ink:#183127;--ink2:#26473a;--muted:#6b776f;--line:#ddd6c9;--coral:#d45f4d;--coral2:#a94337;--sage:#dce5db;--gold:#d3a54e;--danger:#a13232;--shadow:0 16px 45px rgba(31,47,38,.08)}
 a{text-decoration:none;color:inherit}
 .flashbar{padding:12px 15px;background:#eef4ed;border:1px solid #c5d2c4;border-radius:5px;color:#315343;font-size:13px;margin-bottom:16px}.flashbar.error{background:#fff0ed;border-color:#e1aaa1;color:#91352d}
@@ -29,7 +30,7 @@ a{text-decoration:none;color:inherit}
   <div class="nav-label">Mon identité</div>
   <a class="side-link" href="/onboarding"><span class="side-icon">✦</span>Identité de marque</a>
   <a class="side-link" href="/instagram/connect"><span class="side-icon">◎</span>Connexion Instagram</a>
-  <a class="side-link" href="/billing/checkout/{{ user.selected_plan }}"><span class="side-icon">€</span>Abonnement</a>
+  <a class="side-link" href="#networks"><span class="side-icon">⌁</span>Mes réseaux</a>
   <a class="side-link" href="/account"><span class="side-icon">⚙</span>Mon compte</a>
   <div class="account"><div class="avatar">{{ brand.business_name[:1]|upper }}</div><div><b>{{ brand.business_name }}</b><small>{{ user.selected_plan|capitalize }} · {{ user.subscription_status }}</small></div></div>
 </aside>
@@ -43,6 +44,7 @@ a{text-decoration:none;color:inherit}
     <div class="card week-card"><div><div class="eyebrow">Préparation</div><h3>Votre semaine</h3></div><div><div class="week-score">5 <small>contenus en préparation</small></div><div class="progress"><span></span></div></div></div>
   </section>
   <section id="planning" class="card" style="margin-top:16px"><div class="panel-title"><div><h2>Calendrier de publication</h2><p>Les contenus programmés, publiés ou à corriger sont regroupés ici.</p></div><span class="step-badge" id="calendarCount">0 contenu</span></div><div id="scheduleList" class="schedule-list"><div class="schedule-empty">Chargement du calendrier…</div></div></section>
+  <section id="networks" class="card" style="margin-top:16px"><div class="panel-title"><div><h2>Centre multi-réseaux</h2><p>Commercia prépare un contenu propre à chaque plateforme. Seules les connexions confirmées peuvent publier.</p></div><span class="step-badge">8 réseaux</span></div><div id="networkGrid" class="network-grid"><div class="schedule-empty">Vérification des connexions…</div></div><div id="pilotAction" class="pilot-action" hidden><p><strong>Utiliser Commercia comme premier client réel.</strong><br>Cette action remplace l’identité de cet espace par l’identité officielle Commercia, sans paiement.</p><button type="button" onclick="activatePilot()">Activer le compte pilote</button></div></section>
   <section class="content-layout">
     <div class="card">
       <div class="panel-title"><div><h2>Présentez votre actualité</h2><p>Ces informations servent à construire une semaine fidèle à votre activité et à votre audience.</p></div><span class="step-badge">Étape 1 sur 2</span></div>
@@ -80,7 +82,21 @@ function renderCampaign(data){
   const calendar=(data.calendar||[]).map((item,i)=>`<article class="output-card calendar-day"><div class="day-number">${i+1}</div><div><div class="eyebrow">${text(item.day)}</div><h3>${text(item.content_type)}</h3><p>${text(item.topic)}</p><span class="pill">${text(item.goal)}</span></div></article>`).join("");
   const offer=data.commercial_offer||{};
   const offerCard=(offer.headline||offer.body||offer.cta)?`<article class="output-card offer"><div class="eyebrow">Offre prête à diffuser</div><h3>${text(offer.headline)}</h3><p>${text(offer.body)}</p>${offer.cta?`<span class="pill">${text(offer.cta)}</span>`:""}</article>`:"";
-  return `${data.summary?`<article class="output-card summary"><div class="eyebrow">Vision de la campagne</div><p>${text(data.summary)}</p></article>`:""}${section("📅","Calendrier de la semaine",`<div class="grid calendar-grid">${calendar}</div>`)}${section("✦","Publications Instagram",`<div class="grid">${posts}</div>`)}${section("▶","Reels",`<div class="grid two">${reels}</div>`)}${section("◉","Stories",`<div class="grid two">${stories}</div>`)}${section("€","Offre commerciale",offerCard)}${section("★","Réponse à un avis Google",data.review_reply?`<article class="output-card"><p>${text(data.review_reply)}</p></article>`:"")}`;
+  const platformContent=Object.entries(data.platform_content||{}).map(([platform,item])=>`<article class="output-card"><div class="eyebrow">${text(platform)}</div><h3>${text(item.format)}</h3><p>${text(item.copy)}</p><div class="meta">${meta("Angle",item.angle)}${meta("Appel à l'action",item.cta)}</div></article>`).join("");
+  return `${data.summary?`<article class="output-card summary"><div class="eyebrow">Vision de la campagne</div><p>${text(data.summary)}</p></article>`:""}${section("📅","Calendrier de la semaine",`<div class="grid calendar-grid">${calendar}</div>`)}${section("✦","Publications Instagram",`<div class="grid">${posts}</div>`)}${section("▶","Reels",`<div class="grid two">${reels}</div>`)}${section("◉","Stories",`<div class="grid two">${stories}</div>`)}${section("⌁","Adaptations multi-réseaux",`<div class="grid two">${platformContent}</div>`)}${section("€","Offre commerciale",offerCard)}${section("★","Réponse à un avis Google",data.review_reply?`<article class="output-card"><p>${text(data.review_reply)}</p></article>`:"")}`;
+}
+
+async function loadSocialStatus(){
+  try{const response=await fetch("/api/social/status"),json=await response.json();if(!response.ok)return;
+    document.getElementById("networkGrid").innerHTML=(json.platforms||[]).map(item=>`<article class="network-card"><b>${text(item.name)}</b><small>${text(item.formats)}</small><span class="network-state ${item.connected?"connected":""}">${text(item.status_label)}</span></article>`).join("");
+    document.getElementById("pilotAction").hidden=json.pilot;
+  }catch(_){document.getElementById("networkGrid").innerHTML='<div class="schedule-empty">État des réseaux momentanément indisponible.</div>'}
+}
+async function activatePilot(){
+  if(!confirm("Remplacer l’identité de cet espace par Commercia AI et activer le mode pilote interne sans paiement ?"))return;
+  const csrfToken=document.querySelector('meta[name="csrf-token"]').content;
+  const response=await fetch("/api/pilot/activate",{method:"POST",headers:{"Content-Type":"application/json","X-CSRFToken":csrfToken},body:JSON.stringify({confirmation:"ACTIVER COMMERCIA"})});
+  const json=await response.json();if(!response.ok){showApproval(json.error||"Activation impossible.");return}window.location=json.redirect||"/workspace";
 }
 
 function campaignText(data){
@@ -90,6 +106,7 @@ function campaignText(data){
   (data.posts||[]).forEach((x,i)=>lines.push(`PUBLICATION ${i+1} — ${x.title||""}`,x.caption||"",Array.isArray(x.hashtags)?x.hashtags.join(" "):(x.hashtags||""),`CTA : ${x.cta||""}`,""));
   (data.reels||[]).forEach((x,i)=>lines.push(`REEL ${i+1} — ${x.title||""}`,`Accroche : ${x.hook||""}`,`Plans : ${Array.isArray(x.shots)?x.shots.join(" · "):(x.shots||"")}`,`Texte écran : ${x.overlay_text||""}`,x.caption||"",""));
   (data.stories||[]).forEach((x,i)=>lines.push(`STORY ${i+1} — ${x.title||""}`,x.content||"",`Interaction : ${x.interaction||""}`,""));
+  Object.entries(data.platform_content||{}).forEach(([platform,x])=>lines.push(`RÉSEAU — ${platform.toUpperCase()}`,`Format : ${x.format||""}`,`Angle : ${x.angle||""}`,x.copy||"",`CTA : ${x.cta||""}`,""));
   if(data.commercial_offer)lines.push("OFFRE COMMERCIALE",data.commercial_offer.headline||"",data.commercial_offer.body||"",data.commercial_offer.cta||"","");
   if(data.review_reply)lines.push("RÉPONSE À UN AVIS",data.review_reply);
   return lines.join("\n");
@@ -192,7 +209,7 @@ async function loadAutomationStatus(){
     else{title.textContent="Connexion Instagram à terminer";state.innerHTML='<span class="live-dot"></span>EN ATTENTE'}
   }catch(_){}
 }
-window.addEventListener("DOMContentLoaded",async()=>{loadAutomationStatus();loadCalendar();
+window.addEventListener("DOMContentLoaded",async()=>{loadAutomationStatus();loadCalendar();loadSocialStatus();
   try{const response=await fetch("/api/campaigns/latest");const saved=await response.json();if(saved.campaign){document.getElementById("result").className="";document.getElementById("result").innerHTML=renderCampaign(saved.campaign);activateCampaign(saved.campaign,saved.campaign_id)}}catch(_){}
 });
 </script>
