@@ -30,6 +30,7 @@ a{text-decoration:none;color:inherit}
   <a class="side-link" href="/onboarding"><span class="side-icon">✦</span>Identité de marque</a>
   <a class="side-link" href="/instagram/connect"><span class="side-icon">◎</span>Connexion Instagram</a>
   <a class="side-link" href="/billing/checkout/{{ user.selected_plan }}"><span class="side-icon">€</span>Abonnement</a>
+  <a class="side-link" href="/account"><span class="side-icon">⚙</span>Mon compte</a>
   <div class="account"><div class="avatar">{{ brand.business_name[:1]|upper }}</div><div><b>{{ brand.business_name }}</b><small>{{ user.selected_plan|capitalize }} · {{ user.subscription_status }}</small></div></div>
 </aside>
 <div>
