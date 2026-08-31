@@ -518,6 +518,37 @@ def latest_campaign():
         return jsonify({"campaign": None})
     return jsonify({"campaign_id": campaign.id, "campaign": campaign.result_json, "status": campaign.status})
 
+
+@app.get("/api/calendar")
+@login_required
+def publication_calendar():
+    posts = ScheduledPost.query.filter_by(brand_id=current_user.brand.id).order_by(
+        ScheduledPost.scheduled_at.desc()
+    ).limit(60).all()
+    return jsonify({"posts": [{
+        "id": post.id,
+        "content_type": post.content_type,
+        "caption": post.caption,
+        "media_url": post.media_url,
+        "scheduled_at": post.scheduled_at.isoformat(),
+        "status": post.status,
+        "published_at": post.published_at.isoformat() if post.published_at else None,
+        "attempts": post.attempts,
+        "last_error": post.last_error,
+    } for post in posts]})
+
+
+@app.post("/api/calendar/<int:post_id>/cancel")
+@login_required
+def cancel_publication(post_id):
+    post = ScheduledPost.query.filter_by(id=post_id, brand_id=current_user.brand.id).first_or_404()
+    if post.status not in {"scheduled", "retry"}:
+        return jsonify({"error": "Seule une publication en attente peut être annulée."}), 409
+    post.status = "cancelled"
+    post.last_error = None
+    db.session.commit()
+    return jsonify({"ok": True, "status": post.status})
+
 if __name__ == "__main__":
     if os.getenv("RENDER") == "true" and os.getenv("FLASK_DEBUG") != "1":
         os.execvp("gunicorn", ["gunicorn", "--bind", f"0.0.0.0:{os.getenv('PORT', '10000')}", "--workers", "2", "--timeout", "120", "app:app"])
