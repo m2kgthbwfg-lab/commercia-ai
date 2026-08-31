@@ -92,6 +92,23 @@ def test_health_reports_configuration(monkeypatch):
     assert response.headers["X-Frame-Options"] == "DENY"
 
 
+def test_scheduler_endpoint_requires_private_token(monkeypatch):
+    monkeypatch.setenv("SCHEDULER_TOKEN", "private-test-token")
+    response = client().post("/internal/scheduler/run")
+    assert response.status_code == 401
+
+
+def test_scheduler_endpoint_runs_with_private_token(monkeypatch):
+    monkeypatch.setenv("SCHEDULER_TOKEN", "private-test-token")
+    monkeypatch.setattr(commercia, "run_due_publications", lambda: {"published": 1})
+    response = client().post(
+        "/internal/scheduler/run",
+        headers={"Authorization": "Bearer private-test-token"},
+    )
+    assert response.status_code == 200
+    assert response.get_json() == {"ok": True, "result": {"published": 1}}
+
+
 def test_generate_requires_login(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     response = client().post("/api/generate", json={})
