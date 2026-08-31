@@ -53,6 +53,30 @@ def test_home_page_loads():
     assert b"7 jours" in response.data
 
 
+def test_legal_pages_are_public():
+    test_client = client()
+    for path in ["/mentions-legales", "/confidentialite", "/conditions"]:
+        response = test_client.get(path)
+        assert response.status_code == 200
+        assert b"Commercia" in response.data
+
+
+def test_account_requires_login():
+    assert client().get("/account").status_code == 302
+
+
+def test_account_export_contains_brand_data():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.get("/account/export")
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert payload["user"]["email"] == "client@example.com"
+    assert payload["brand"]["business_name"] == "Sur un Plateau"
+    assert response.headers["Content-Disposition"].endswith("commercia-export.json")
+
+
 def test_private_app_requires_login():
     response = client().get("/app")
     assert response.status_code == 302
@@ -156,6 +180,7 @@ def test_signup_and_onboarding_flow():
             "email": "malek@example.com",
             "password": "motdepasse1",
             "plan": "pro",
+            "accept_terms": "yes",
         },
     )
     assert signup.status_code == 302
