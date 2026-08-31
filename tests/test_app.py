@@ -51,7 +51,32 @@ def test_home_page_loads():
     assert b"figma-site.css" in response.data
     assert b"figma-site.js" in response.data
     assert b"/signup?plan=autopilot" in response.data
+    for route in [b"/produit", b"/solutions", b"/integrations", b"/tarifs", b"/ressources"]:
+        assert route in response.data
 
+
+
+def test_public_navigation_pages_are_real_and_accessible():
+    test_client = client()
+    expected = {
+        "/produit": "Intelligence de marque",
+        "/solutions": "Une seule plateforme",
+        "/integrations": "Instagram",
+        "/tarifs": "7 jours",
+        "/ressources": "premier essai",
+    }
+    for path, text in expected.items():
+        response = test_client.get(path)
+        assert response.status_code == 200
+        assert text.encode("utf-8") in response.data
+        assert b"/signup?plan=autopilot" in response.data
+        assert b"/login" in response.data
+
+
+def test_legacy_pricing_redirects_to_real_pricing_page():
+    response = client().get("/pricing")
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/tarifs")
 
 def test_legal_pages_are_public():
     test_client = client()
