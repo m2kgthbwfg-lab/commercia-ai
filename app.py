@@ -9,6 +9,7 @@ from openai import OpenAI
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.security import check_password_hash
 from auth import auth
@@ -28,6 +29,13 @@ if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+if database_url.startswith("postgresql://"):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 240,
+        "pool_size": 5,
+        "max_overflow": 5,
+    }
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 app.config["SESSION_COOKIE_SECURE"] = os.getenv("RENDER") == "true"
@@ -65,7 +73,18 @@ def add_security_headers(response):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return db.session.get(User, int(user_id))
+    try:
+        return db.session.get(User, int(user_id))
+    except OperationalError:
+        app.logger.warning("Connexion PostgreSQL périmée pendant le chargement de session; nouvelle tentative")
+        db.session.rollback()
+        db.engine.dispose()
+        try:
+            return db.session.get(User, int(user_id))
+        except OperationalError:
+            db.session.rollback()
+            app.logger.exception("PostgreSQL indisponible après nouvelle tentative")
+            return None
 
 
 with app.app_context():
