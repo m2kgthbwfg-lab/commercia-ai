@@ -16,7 +16,20 @@ PLAN_PRICE_KEYS = {
 
 
 def stripe_ready():
-    return bool(os.getenv("STRIPE_SECRET_KEY") and os.getenv("STRIPE_WEBHOOK_SECRET"))
+    return all(os.getenv(key) for key in [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        *PLAN_PRICE_KEYS.values(),
+    ])
+
+
+def plan_from_subscription(subscription):
+    items = subscription.get("items", {}).get("data", [])
+    price_id = items[0].get("price", {}).get("id") if items else None
+    for plan, env_key in PLAN_PRICE_KEYS.items():
+        if price_id and price_id == os.getenv(env_key):
+            return plan
+    return None
 
 
 @billing.get("/checkout/<plan>")
@@ -47,6 +60,16 @@ def checkout(plan):
 @billing.get("/success")
 @login_required
 def success():
+    session_id = request.args.get("session_id", "")
+    if session_id and os.getenv("STRIPE_SECRET_KEY"):
+        stripe.api_key = os.environ["STRIPE_SECRET_KEY"]
+        session = stripe.checkout.Session.retrieve(session_id)
+        if str(session.get("client_reference_id")) == str(current_user.id) and session.get("payment_status") in {"paid", "no_payment_required"}:
+            current_user.stripe_customer_id = session.get("customer")
+            current_user.stripe_subscription_id = session.get("subscription")
+            current_user.selected_plan = session.get("metadata", {}).get("plan", current_user.selected_plan)
+            current_user.subscription_status = "active"
+            db.session.commit()
     return redirect(url_for("workspace", payment="success"))
 
 
@@ -76,7 +99,8 @@ def webhook():
     data = event["data"]["object"]
     event_type = event["type"]
     if event_type == "checkout.session.completed":
-        user = db.session.get(User, int(data.get("client_reference_id") or data.get("metadata", {}).get("user_id")))
+        user_id = data.get("client_reference_id") or data.get("metadata", {}).get("user_id")
+        user = db.session.get(User, int(user_id)) if user_id and str(user_id).isdigit() else None
         if user:
             user.stripe_customer_id = data.get("customer")
             user.stripe_subscription_id = data.get("subscription")
@@ -87,6 +111,9 @@ def webhook():
         user = User.query.filter_by(stripe_subscription_id=data.get("id")).first()
         if user:
             user.subscription_status = data.get("status", "cancelled")
+            plan = plan_from_subscription(data)
+            if plan:
+                user.selected_plan = plan
             db.session.commit()
     current_app.logger.info("Stripe webhook traité: %s", event_type)
     return jsonify({"received": True})
