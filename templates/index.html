@@ -17,11 +17,12 @@ a{text-decoration:none;color:inherit}
 @media(max-width:980px){.app-shell{grid-template-columns:1fr}.sidebar{display:none}.mobile-top{display:flex;height:68px;background:var(--ink);color:white;align-items:center;justify-content:space-between;padding:0 20px}.main{padding:28px 24px 80px}.content-layout{grid-template-columns:1fr}.tip-card{order:-1}.approval-actions{grid-template-columns:1fr}}
 @media(max-width:640px){.main{padding:24px 15px 70px}.page-head{display:block}.date-chip{display:none}.page-head h1{font-size:36px}.overview{grid-template-columns:1fr}.status-grid{gap:6px}.status-item{padding:11px 9px}.status-item b{font-size:19px}.form-grid{grid-template-columns:1fr}.full{grid-column:auto}.grid.two,.calendar-grid{grid-template-columns:1fr}.card{padding:19px}.panel-title{display:block}.step-badge{display:inline-block;margin-top:12px}.week-card{display:none}}
 </style>
+<link rel="stylesheet" href="{{ url_for('static', filename='commercia-ui.css') }}">
 </head>
-<body>
+<body class="workspace-page">
 <div class="app-shell">
 <aside class="sidebar">
-  <a class="logo" href="/"><span class="logo-mark">c</span>Commercia</a>
+  <a class="logo" href="/"><span class="logo-mark"></span>Commercia AI</a>
   <div class="nav-label">Mon espace</div>
   <div class="side-link active"><span class="side-icon">□</span>Vue d’ensemble</div>
   <a class="side-link" href="#planning"><span class="side-icon">◇</span>Ma semaine</a>
@@ -35,7 +36,7 @@ a{text-decoration:none;color:inherit}
   <div class="account"><div class="avatar">{{ brand.business_name[:1]|upper }}</div><div><b>{{ brand.business_name }}</b><small>{{ user.selected_plan|capitalize }} · {{ user.subscription_status }}</small></div></div>
 </aside>
 <div>
-<div class="mobile-top"><a class="logo" href="/"><span class="logo-mark">c</span>Commercia</a><span style="font-size:12px;color:#b9c9c0">{{ brand.business_name }}</span></div>
+<div class="mobile-top"><a class="logo" href="/"><span class="logo-mark"></span>Commercia AI</a><span style="font-size:12px;color:#b9c9c0">{{ brand.business_name }}</span></div>
 <main class="main">
   <header class="page-head"><div><div class="eyebrow">Vue d’ensemble</div><h1>Bonjour {{ user.first_name }}, votre semaine prend forme.</h1><p class="intro">Retrouvez ici votre planning, vos réglages et les contenus préparés pour {{ brand.business_name }}.</p></div><div class="date-chip">Formule {{ user.selected_plan|capitalize }}</div></header>
   {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flashbar {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
