@@ -24,25 +24,27 @@ a{text-decoration:none;color:inherit}
 <aside class="sidebar">
   <a class="logo" href="/"><span class="logo-mark"></span>Commercia AI</a>
   <div class="nav-label">Mon espace</div>
-  <div class="side-link active"><span class="side-icon">□</span>Vue d’ensemble</div>
+  <a class="side-link active" href="#overview"><span class="side-icon">□</span>Vue d’ensemble</a>
   <a class="side-link" href="#planning"><span class="side-icon">◇</span>Ma semaine</a>
-  <div class="side-link"><span class="side-icon">○</span>Bibliothèque</div>
-  <div class="side-link"><span class="side-icon">↗</span>Résultats</div>
+  <a class="side-link" href="#library"><span class="side-icon">○</span>Bibliothèque</a>
+  <a class="side-link" href="#campaign"><span class="side-icon">↗</span>Créations</a>
   <div class="nav-label">Mon identité</div>
   <a class="side-link" href="/onboarding"><span class="side-icon">✦</span>Identité de marque</a>
   <a class="side-link" href="/instagram/connect"><span class="side-icon">◎</span>Connexion Instagram</a>
   <a class="side-link" href="#networks"><span class="side-icon">⌁</span>Mes réseaux</a>
   <a class="side-link" href="/account"><span class="side-icon">⚙</span>Mon compte</a>
   <div class="account"><div class="avatar">{{ brand.business_name[:1]|upper }}</div><div><b>{{ brand.business_name }}</b><small>{{ user.selected_plan|capitalize }} · {{ user.subscription_status }}</small></div></div>
+  <form class="sidebar-logout" method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button type="submit">Se déconnecter</button></form>
 </aside>
 <div>
 <div class="mobile-top"><a class="logo" href="/"><span class="logo-mark"></span>Commercia AI</a><span style="font-size:12px;color:#b9c9c0">{{ brand.business_name }}</span></div>
-<main class="main">
+<nav class="mobile-nav" aria-label="Navigation de l’espace"><a href="#overview">Accueil</a><a href="#planning">Planning</a><a href="#library">Médias</a><a href="#campaign">Créations</a><a href="{{ url_for('account_settings') }}">Compte</a></nav>
+<main id="overview" class="main">
   <header class="page-head"><div><div class="eyebrow">Vue d’ensemble</div><h1>Bonjour {{ user.first_name }}, votre semaine prend forme.</h1><p class="intro">Retrouvez ici votre planning, vos réglages et les contenus préparés pour {{ brand.business_name }}.</p></div><div class="date-chip">Formule {{ user.selected_plan|capitalize }}</div></header>
   {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="flashbar {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
   <section class="overview">
-    <div class="card automation-card"><div class="automation-row"><div><div class="eyebrow" style="color:#efbd6d">Publication Instagram</div><h3 id="autoTitle">Configuration Instagram</h3></div><div id="autoState" class="automation-state"><span class="live-dot"></span>EN ATTENTE</div></div><div class="status-grid"><div class="status-item"><b id="autoTime">18:00</b><span>Publication</span></div><div class="status-item"><b>7/7</b><span>Jours actifs</span></div><div class="status-item"><b id="photoCount">0</b><span>Photos prêtes</span></div></div><button type="button" id="autoToggle" onclick="toggleAutopilot()" hidden style="position:relative;z-index:1;margin-top:14px;background:#fff;color:#183127">Activer le pilote automatique</button></div>
-    <div class="card week-card"><div><div class="eyebrow">Préparation</div><h3>Votre semaine</h3></div><div><div class="week-score">5 <small>contenus en préparation</small></div><div class="progress"><span></span></div></div></div>
+    <div class="card automation-card"><div class="automation-row"><div><div class="eyebrow" style="color:#efbd6d">Publication Instagram</div><h3 id="autoTitle">Configuration Instagram</h3></div><div id="autoState" class="automation-state"><span class="live-dot"></span>EN ATTENTE</div></div><div class="status-grid"><div class="status-item"><b id="autoTime">{{ brand.publish_hour }}</b><span>Publication</span></div><div class="status-item"><b id="activeDays">{{ stats.active_days }}/7</b><span>Jours programmés</span></div><div class="status-item"><b id="photoCount">{{ stats.media_count }}</b><span>Visuels prêts</span></div></div><button type="button" id="autoToggle" onclick="toggleAutopilot()" hidden style="position:relative;z-index:1;margin-top:14px;background:#fff;color:#183127">Activer le pilote automatique</button></div>
+    <div class="card week-card"><div><div class="eyebrow">Préparation</div><h3>Votre semaine</h3></div><div><div class="week-score"><span id="preparedCount">{{ stats.prepared_count }}</span> <small>contenus préparés</small></div><div class="progress" aria-label="Progression de la campagne"><span id="weekProgress" style="width:{{ stats.progress_percent }}%"></span></div></div></div>
   </section>
   <section id="planning" class="card" style="margin-top:16px"><div class="panel-title"><div><h2>Calendrier de publication</h2><p>Les contenus programmés, publiés ou à corriger sont regroupés ici.</p></div><span class="step-badge" id="calendarCount">0 contenu</span></div><div id="scheduleList" class="schedule-list"><div class="schedule-empty">Chargement du calendrier…</div></div></section>
   <section id="networks" class="card" style="margin-top:16px"><div class="panel-title"><div><h2>Centre multi-réseaux</h2><p>Commercia prépare un contenu propre à chaque plateforme. Seules les connexions confirmées peuvent publier.</p></div><span class="step-badge">8 réseaux</span></div><div id="networkGrid" class="network-grid"><div class="schedule-empty">Vérification des connexions…</div></div><div id="pilotAction" class="pilot-action" hidden><p><strong>Utiliser Commercia comme premier client réel.</strong><br>Cette action remplace l’identité de cet espace par l’identité officielle Commercia, sans paiement.</p><button type="button" onclick="activatePilot()">Activer le compte pilote</button></div></section>
@@ -61,9 +63,9 @@ a{text-decoration:none;color:inherit}
       </div>
       <button type="button" onclick="generate()" id="btn">Préparer ma semaine →</button>
     </div>
-    <aside class="card tip-card"><div class="eyebrow">Vos vrais visuels</div><h3>Votre identité fait la différence.</h3><p>Ajoutez vos produits, services, réalisations, équipes ou créations. Commercia les réutilisera dans votre calendrier.</p><div class="tip-list"><div class="tip"><span>✓</span>JPG, PNG ou WebP</div><div class="tip"><span>✓</span>Recadrage optimisé automatiquement</div><div class="tip"><span>✓</span>Bibliothèque privée par espace</div></div><div class="media-upload"><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" onclick="uploadPhoto()" id="uploadBtn">Ajouter ce visuel</button><div id="mediaStatus" class="media-status">{{ brand.media_assets|length }} visuel(s) dans votre bibliothèque.</div></div></aside>
+    <aside id="library" class="card tip-card"><div class="eyebrow">Bibliothèque visuelle</div><h3>Votre identité fait la différence.</h3><p>Ajoutez vos produits, services, réalisations, équipes ou créations. Commercia les réutilisera dans votre calendrier.</p><div class="tip-list"><div class="tip"><span>✓</span>JPG, PNG ou WebP</div><div class="tip"><span>✓</span>Recadrage optimisé automatiquement</div><div class="tip"><span>✓</span>Bibliothèque privée par espace</div></div><div class="media-upload"><label for="mediaFile">Choisir un visuel</label><input id="mediaFile" type="file" accept="image/jpeg,image/png,image/webp"><button type="button" onclick="uploadPhoto()" id="uploadBtn">Ajouter ce visuel</button><div id="mediaStatus" class="media-status" role="status">{{ stats.media_count }} visuel(s) dans votre bibliothèque.</div></div></aside>
   </section>
-  <section class="result-shell" aria-live="polite"><div class="result-head"><h2>Votre campagne</h2><small>PRÊTE À RELIRE</small></div><div id="result" class="empty">Votre campagne personnalisée apparaîtra ici après la préparation.</div><div id="approvalPanel" class="card approval-panel" hidden><div class="panel-title"><div><h2>Validation avant Instagram</h2><p>Relisez la campagne et choisissez ce que vous souhaitez en faire.</p></div><span class="step-badge">Étape 2 sur 2</span></div><div class="approval-actions"><button type="button" class="secondary" onclick="copyCampaign()">Copier les textes</button><button type="button" class="secondary" onclick="downloadCampaign()">Télécharger le dossier</button><button type="button" class="secondary" onclick="publishTest()">Publier 1 test</button><button type="button" class="success" onclick="approveCampaign()">Programmer les 7 publications</button></div><div id="approvalStatus" class="approval-status"></div></div></section>
+  <section id="campaign" class="result-shell" aria-live="polite"><div class="result-head"><h2>Votre campagne</h2><small>PRÊTE À RELIRE</small></div><div id="result" class="empty">Votre campagne personnalisée apparaîtra ici après la préparation.</div><div id="approvalPanel" class="card approval-panel" hidden><div class="panel-title"><div><h2>Validation avant Instagram</h2><p>Relisez la campagne et choisissez ce que vous souhaitez en faire.</p></div><span class="step-badge">Étape 2 sur 2</span></div><div class="approval-actions"><button type="button" class="secondary" onclick="copyCampaign()">Copier les textes</button><button type="button" class="secondary" onclick="downloadCampaign()">Télécharger le dossier</button><button type="button" class="secondary" onclick="publishTest()">Publier 1 test</button><button type="button" class="success" onclick="approveCampaign()">Programmer la campagne</button></div><div id="approvalStatus" class="approval-status" role="status"></div></div></section>
   <div class="footer-note">Commercia · Votre communication, enfin régulière</div>
 </main>
 </div>
@@ -165,12 +167,17 @@ async function loadCalendar(){
   try{
     const response=await fetch("/api/calendar"),json=await response.json();if(!response.ok)return;
     const posts=json.posts||[],list=document.getElementById("scheduleList");document.getElementById("calendarCount").textContent=`${posts.length} contenu${posts.length>1?"s":""}`;
+    const activeDates=new Set(posts.filter(post=>["scheduled","retry"].includes(post.status)).map(post=>new Date(post.scheduled_at).toDateString()));
+    document.getElementById("activeDays").textContent=`${Math.min(activeDates.size,7)}/7`;
     if(!posts.length){list.innerHTML='<div class="schedule-empty">Aucune publication programmée. Préparez puis validez une campagne.</div>';return}
     list.innerHTML=posts.map(post=>{const date=new Date(post.scheduled_at),day=new Intl.DateTimeFormat("fr-FR",{day:"2-digit",month:"short"}).format(date),hour=new Intl.DateTimeFormat("fr-FR",{hour:"2-digit",minute:"2-digit"}).format(date),canCancel=["scheduled","retry"].includes(post.status);return `<article class="schedule-item"><div class="schedule-date">${day}<small>${hour}</small></div><div class="schedule-copy"><strong>${text(statusLabels[post.status]||post.status)}</strong><p>${text(post.caption)}</p>${post.last_error?`<p style="color:#963b31">${text(post.last_error)}</p>`:""}</div><div><span class="status-pill ${text(post.status)}">${text(statusLabels[post.status]||post.status)}</span>${canCancel?`<button type="button" onclick="cancelPost(${Number(post.id)})">Annuler</button>`:""}</div></article>`}).join("");
   }catch(_){document.getElementById("scheduleList").innerHTML='<div class="schedule-empty">Calendrier momentanément indisponible.</div>'}
 }
 function activateCampaign(data,campaignId=null){
   currentCampaign=data;currentCampaignId=campaignId;
+  const prepared=(data.posts||[]).length;
+  document.getElementById("preparedCount").textContent=prepared;
+  document.getElementById("weekProgress").style.width=`${Math.min(100,Math.round(prepared/7*100))}%`;
   document.getElementById("approvalPanel").hidden=false;
 }
 async function uploadPhoto(){
@@ -202,6 +209,7 @@ async function loadAutomationStatus(){
     const status=await statusResponse.json(),health=await healthResponse.json();
     document.getElementById("autoTime").textContent=status.publish_hour||"18:00";
     document.getElementById("photoCount").textContent=status.photo_count||0;
+    document.getElementById("mediaStatus").textContent=`${status.photo_count||0} visuel(s) dans votre bibliothèque.`;
     const title=document.getElementById("autoTitle"),state=document.getElementById("autoState");
     const toggle=document.getElementById("autoToggle");toggle.hidden=!status.connected;toggle.dataset.enabled=status.enabled?"true":"false";toggle.textContent=status.enabled?"Désactiver le pilote automatique":"Activer le pilote automatique";
     if(health.status==="fail"&&status.connected){title.textContent=health.message||"Instagram doit être reconnecté";state.innerHTML='<span class="live-dot" style="background:#ff8d83"></span>À CORRIGER'}

@@ -123,7 +123,24 @@ def dashboard():
 def workspace():
     if not current_user.onboarding_complete:
         return redirect(url_for("onboarding"))
-    return render_template("index.html", user=current_user, brand=current_user.brand)
+    brand = current_user.brand
+    now = datetime.now(timezone.utc)
+    scheduled_posts = ScheduledPost.query.filter(
+        ScheduledPost.brand_id == brand.id,
+        ScheduledPost.status.in_(("scheduled", "retry")),
+        ScheduledPost.scheduled_at >= now,
+        ScheduledPost.scheduled_at < now + timedelta(days=8),
+    ).all()
+    latest = Campaign.query.filter_by(brand_id=brand.id).order_by(Campaign.created_at.desc()).first()
+    prepared_count = len((latest.result_json or {}).get("posts", [])) if latest else 0
+    active_days = min(7, len({post.scheduled_at.date() for post in scheduled_posts}))
+    stats = {
+        "prepared_count": prepared_count,
+        "progress_percent": min(100, round(prepared_count / 7 * 100)),
+        "active_days": active_days,
+        "media_count": MediaAsset.query.filter_by(brand_id=brand.id).count(),
+    }
+    return render_template("index.html", user=current_user, brand=brand, stats=stats)
 
 
 def is_pilot_user(user):
@@ -233,7 +250,37 @@ def terms_of_service():
 @app.get("/account")
 @login_required
 def account_settings():
-    return render_template("account.html", user=current_user, brand=current_user.brand)
+    return render_template(
+        "account.html",
+        user=current_user,
+        brand=current_user.brand,
+        billing_ready=stripe_ready(),
+    )
+
+
+@app.errorhandler(404)
+def not_found(error):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Ressource introuvable."}), 404
+    return render_template(
+        "error.html",
+        code=404,
+        title="Page introuvable",
+        message="Cette page n’existe pas ou a été déplacée.",
+    ), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Une erreur interne est survenue. Réessayez dans quelques instants."}), 500
+    return render_template(
+        "error.html",
+        code=500,
+        title="Un imprévu est survenu",
+        message="Votre travail est conservé. Rechargez la page ou revenez à votre espace.",
+    ), 500
 
 
 @app.get("/account/export")

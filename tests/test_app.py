@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
+from werkzeug.security import check_password_hash, generate_password_hash
 
 import app as commercia
 from instagram_publisher import instagram_image_url, run_due_publications, wait_for_container
@@ -47,10 +48,9 @@ def test_home_page_loads():
     response = client().get("/")
     assert response.status_code == 200
     assert b"Commercia" in response.data
-    assert b"r\xc3\xa9seaux sociaux avancent" in response.data
-    assert b"Cr\xc3\xa9ateurs, ind\xc3\xa9pendants, marques, entreprises et organisations" in response.data
-    assert b"commerces locaux" not in response.data
-    assert b"7 jours" in response.data
+    assert b"figma-site.css" in response.data
+    assert b"figma-site.js" in response.data
+    assert b"/signup?plan=autopilot" in response.data
 
 
 def test_legal_pages_are_public():
@@ -92,6 +92,39 @@ def test_workspace_is_personalized():
     assert b"Bonjour Malek" in response.data
     assert b"Sur un Plateau" in response.data
     assert "Centre multi-réseaux".encode() in response.data
+    assert b'href="#library"' in response.data
+    assert b'href="#campaign"' in response.data
+
+
+def test_not_found_pages_are_consistent():
+    test_client = client()
+    response = test_client.get("/page-absente")
+    assert response.status_code == 404
+    assert "Page introuvable".encode() in response.data
+    api_response = test_client.get("/api/page-absente")
+    assert api_response.status_code == 404
+    assert api_response.get_json()["error"] == "Ressource introuvable."
+
+
+def test_authenticated_user_can_change_password():
+    user_id = create_user()
+    with commercia.app.app_context():
+        user = db.session.get(User, user_id)
+        user.password_hash = generate_password_hash("AncienMot1")
+        db.session.commit()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post(
+        "/account/password",
+        data={
+            "current_password": "AncienMot1",
+            "new_password": "NouveauMot2",
+            "new_password_confirmation": "NouveauMot2",
+        },
+    )
+    assert response.status_code == 302
+    with commercia.app.app_context():
+        assert check_password_hash(db.session.get(User, user_id).password_hash, "NouveauMot2")
 
 
 def test_social_status_is_truthful():

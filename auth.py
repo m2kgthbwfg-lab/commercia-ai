@@ -76,3 +76,27 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("index"))
+
+
+@auth.post("/account/password")
+@login_required
+@limiter.limit("5 per hour")
+def change_password():
+    current_password = request.form.get("current_password", "")
+    new_password = request.form.get("new_password", "")
+    confirmation = request.form.get("new_password_confirmation", "")
+    if not check_password_hash(current_user.password_hash, current_password):
+        flash("Le mot de passe actuel est incorrect.", "error")
+    elif len(new_password) < 10:
+        flash("Le nouveau mot de passe doit contenir au moins 10 caractères.", "error")
+    elif not any(character.isalpha() for character in new_password) or not any(character.isdigit() for character in new_password):
+        flash("Le nouveau mot de passe doit contenir au moins une lettre et un chiffre.", "error")
+    elif new_password != confirmation:
+        flash("La confirmation du nouveau mot de passe ne correspond pas.", "error")
+    elif check_password_hash(current_user.password_hash, new_password):
+        flash("Choisissez un nouveau mot de passe différent de l’actuel.", "error")
+    else:
+        current_user.password_hash = generate_password_hash(new_password)
+        db.session.commit()
+        flash("Votre mot de passe a été modifié.", "success")
+    return redirect(url_for("account_settings"))

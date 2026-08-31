@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0b0e">
+  <title>{{ code }} · Commercia</title>
+  <style>
+    body{min-height:100vh;display:grid;place-items:center;margin:0}.error-shell{width:min(680px,calc(100% - 34px));padding:clamp(30px,6vw,64px);background:var(--panel);border:1px solid var(--line);text-align:center}.error-code{font:400 11px/1 "JetBrains Mono",monospace;letter-spacing:.14em;color:var(--gold)}.error-shell h1{font-size:clamp(42px,7vw,72px);margin:18px 0 12px}.error-shell p{max-width:500px;margin:0 auto 28px;color:var(--muted);line-height:1.65}.error-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.error-actions a{display:inline-flex;min-height:46px;align-items:center;padding:0 18px;background:var(--gold);color:var(--night);text-decoration:none;border-radius:3px}.error-actions a.secondary{background:transparent;color:var(--white);border:1px solid var(--line)}
+  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='commercia-ui.css') }}">
+</head>
+<body>
+  <main class="error-shell">
+    <div class="error-code">ERREUR {{ code }}</div><h1>{{ title }}</h1><p>{{ message }}</p>
+    <div class="error-actions">{% if current_user.is_authenticated %}<a href="{{ url_for('workspace') }}">Revenir à mon espace</a>{% endif %}<a class="secondary" href="{{ url_for('index') }}">Retour à l’accueil</a></div>
+  </main>
+</body>
+</html>
