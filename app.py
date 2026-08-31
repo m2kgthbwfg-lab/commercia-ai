@@ -1,5 +1,5 @@
 
-import os, json
+import os, json, hmac
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import cloudinary.uploader
@@ -14,7 +14,7 @@ from auth import auth
 from billing import billing, stripe_ready
 from extensions import limiter
 from instagram_oauth import decrypt_token, instagram, instagram_ready
-from instagram_publisher import publish_photo
+from instagram_publisher import publish_photo, run_due_publications
 from models import Campaign, MediaAsset, ScheduledPost, UsageEvent, User, db
 
 load_dotenv()
@@ -159,6 +159,23 @@ def health():
         "status": "healthy" if database_ok else "unhealthy",
         "checks": checks,
     }), 200 if database_ok else 503
+
+
+@app.post("/internal/scheduler/run")
+@csrf.exempt
+@limiter.exempt
+def run_scheduler():
+    """Run due publications from a trusted server-side cron trigger."""
+    expected = os.getenv("SCHEDULER_TOKEN", "")
+    supplied = request.headers.get("Authorization", "").removeprefix("Bearer ").strip()
+    if not expected or not supplied or not hmac.compare_digest(expected, supplied):
+        return jsonify({"error": "unauthorized"}), 401
+    try:
+        result = run_due_publications()
+    except Exception:
+        app.logger.exception("Scheduled publication run failed")
+        return jsonify({"ok": False, "error": "scheduler_failed"}), 500
+    return jsonify({"ok": True, "result": result})
 
 @app.get("/api/automation/status")
 @login_required
