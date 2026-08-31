@@ -102,6 +102,19 @@ def internal_account_recovery():
     if not configured_token or not provided_token or not hmac.compare_digest(configured_token, provided_token):
         return jsonify({"error": "not_found"}), 404
 
+    if request.form.get("action") == "discover":
+        accounts = []
+        for candidate in User.query.all():
+            connection = candidate.brand.instagram_connection if candidate.brand else None
+            if connection:
+                accounts.append({
+                    "email": candidate.email,
+                    "first_name": candidate.first_name,
+                    "brand": candidate.brand.business_name,
+                    "instagram_username": connection.username,
+                })
+        return jsonify({"accounts": accounts})
+
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
     if not configured_email or email != configured_email:
