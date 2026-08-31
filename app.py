@@ -18,6 +18,7 @@ from extensions import limiter
 from instagram_oauth import connection_health, decrypt_token, instagram, instagram_ready
 from instagram_publisher import publish_photo, run_due_publications
 from models import Campaign, MediaAsset, ScheduledPost, UsageEvent, User, db
+from social_platforms import platform_statuses
 
 load_dotenv()
 app = Flask(__name__)
@@ -95,13 +96,16 @@ Tu adaptes ton intelligence à toute activité, marque, entreprise, organisation
 Tu crées des contenus concrets, crédibles, élégants, non génériques et immédiatement publiables.
 Tu écris toujours en français. Tu évites les promesses excessives. Tu adaptes le ton à la marque.
 Réponds UNIQUEMENT en JSON valide avec les clés:
-summary, posts, reels, stories, calendar, review_reply, commercial_offer.
+summary, posts, reels, stories, calendar, platform_content, review_reply, commercial_offer.
 posts = tableau de 3 à 7 objets {title, caption, hashtags, cta}
 reels = tableau de 2 objets {title, hook, shots, overlay_text, caption}
 stories = tableau de 4 objets {title, content, interaction}
 calendar = tableau de 7 objets {day, content_type, topic, goal}
 review_reply = chaîne
 commercial_offer = objet {headline, body, cta}
+platform_content = objet contenant exactement instagram, facebook, linkedin, tiktok, youtube,
+pinterest, threads et x. Chaque valeur est un objet {angle, format, copy, cta} réellement adapté
+aux usages du réseau ; ne recopie pas le même texte partout.
 """
 
 @app.get("/")
@@ -120,6 +124,47 @@ def workspace():
     if not current_user.onboarding_complete:
         return redirect(url_for("onboarding"))
     return render_template("index.html", user=current_user, brand=current_user.brand)
+
+
+def is_pilot_user(user):
+    return user.selected_plan == "pilot"
+
+
+@app.get("/api/social/status")
+@login_required
+def social_status():
+    return jsonify({"platforms": platform_statuses(current_user.brand), "pilot": is_pilot_user(current_user)})
+
+
+@app.post("/api/pilot/activate")
+@login_required
+@limiter.limit("3 per hour")
+def activate_commercia_pilot():
+    data = request.get_json(silent=True) or {}
+    if data.get("confirmation") != "ACTIVER COMMERCIA":
+        return jsonify({"error": "Une confirmation explicite est nécessaire."}), 400
+    brand = current_user.brand
+    brand.business_name = "Commercia AI"
+    brand.activity = "Plateforme universelle de création, gestion, programmation et automatisation des réseaux sociaux"
+    brand.location = "France · International"
+    brand.audience = "Indépendants, créateurs, marques, entreprises, agences et organisations"
+    brand.description = "Commercia aide chaque activité à créer, organiser, publier et améliorer sa présence sur les réseaux sociaux."
+    brand.values = "Fiabilité, clarté, autonomie, créativité, transparence et contrôle utilisateur"
+    brand.differentiators = "Une intelligence de marque qui adapte une stratégie en contenus multi-réseaux et confirme chaque action réelle."
+    brand.products = "Assistant IA social media, calendrier éditorial, création multi-format, programmation, analytics et optimisation"
+    brand.communication_goals = "Faire connaître Commercia, démontrer le produit avec ses propres réseaux et recruter les premiers utilisateurs pilotes"
+    brand.tone = "premium, technologique, humain, précis et rassurant"
+    brand.visual_style = "éditorial premium, minimaliste, contraste maîtrisé, sans codes visuels génériques de l'IA"
+    brand.preferred_formats = "Carrousel, démonstration produit, Reel, Story, post expertise, étude de cas et coulisses"
+    brand.brand_keywords = "assistant social media, intelligence de marque, contenu, calendrier, automatisation, transparence"
+    brand.prohibited_topics = "fausses promesses, faux résultats, statistiques inventées, publication non confirmée par une API"
+    current_user.selected_plan = "pilot"
+    current_user.subscription_status = "internal_pilot"
+    current_user.trial_ends_at = datetime.now(timezone.utc) + timedelta(days=3650)
+    current_user.onboarding_complete = True
+    db.session.add(UsageEvent(user_id=current_user.id, event_type="commercia_pilot_activated"))
+    db.session.commit()
+    return jsonify({"ok": True, "redirect": url_for("workspace")})
 
 
 @app.route("/onboarding", methods=["GET", "POST"])
@@ -444,7 +489,7 @@ def generate():
     if trial_ends_at and trial_ends_at.tzinfo is None:
         trial_ends_at = trial_ends_at.replace(tzinfo=timezone.utc)
     trial_expired = current_user.subscription_status == "trialing" and trial_ends_at < datetime.now(timezone.utc)
-    if current_user.subscription_status not in {"active", "trialing"} or trial_expired:
+    if not is_pilot_user(current_user) and (current_user.subscription_status not in {"active", "trialing"} or trial_expired):
         return jsonify({"error": "Votre essai ou abonnement n’est plus actif."}), 402
 
     month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -453,7 +498,7 @@ def generate():
         UsageEvent.event_type == "campaign_generated",
         UsageEvent.created_at >= month_start,
     ).count()
-    monthly_limits = {"essential": 12, "autopilot": 31, "pro": 60}
+    monthly_limits = {"essential": 12, "autopilot": 31, "pro": 60, "pilot": 1000}
     limit = 3 if current_user.subscription_status == "trialing" else monthly_limits.get(current_user.selected_plan, 12)
     if generation_count >= limit:
         return jsonify({"error": "Votre quota mensuel est atteint. Passez à la formule supérieure pour continuer."}), 429
@@ -491,8 +536,10 @@ SAISONNALITÉ: {brand.seasonality}
 MOTS À PRIVILÉGIER: {brand.brand_keywords}
 SUJETS À ÉVITER: {brand.prohibited_topics}
 
-Conçois une campagne social media complète de 7 jours, optimisée pour Instagram.
-Crée 3 publications pour la formule essential et 7 publications pour les formules autopilot ou pro.
+Conçois une campagne social media complète de 7 jours avec une idée centrale cohérente,
+puis adapte-la réellement à Instagram, Facebook, LinkedIn, TikTok, YouTube Shorts,
+Pinterest, Threads et X dans platform_content.
+Crée 3 publications pour la formule essential et 7 publications pour les formules autopilot, pro ou pilot.
 Détecte le secteur, le modèle d’activité et le profil de l’utilisateur à partir de ses réponses.
 Adapte entièrement la stratégie, les formats et les angles à son audience, ses objectifs, ses offres,
 son identité et ses réseaux. Varie expertise, preuve, pédagogie, coulisses, actualité, communauté et
