@@ -116,6 +116,13 @@ def test_health_reports_configuration(monkeypatch):
     assert response.headers["X-Frame-Options"] == "DENY"
 
 
+def test_postgres_engine_uses_stale_connection_protection():
+    options = commercia.app.config.get("SQLALCHEMY_ENGINE_OPTIONS", {})
+    if commercia.app.config["SQLALCHEMY_DATABASE_URI"].startswith("postgresql://"):
+        assert options["pool_pre_ping"] is True
+        assert options["pool_recycle"] == 240
+
+
 def test_scheduler_endpoint_requires_private_token(monkeypatch):
     monkeypatch.setenv("SCHEDULER_TOKEN", "private-test-token")
     response = client().post("/internal/scheduler/run")
