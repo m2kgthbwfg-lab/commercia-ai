@@ -22,11 +22,14 @@ def signup():
         business_name = request.form.get("business_name", "").strip()
         activity = request.form.get("activity", "").strip()
         password = request.form.get("password", "")
+        accept_terms = request.form.get("accept_terms") == "yes"
         plan = request.form.get("plan", request.args.get("plan", "autopilot")).strip().lower()
         if plan not in {"essential", "autopilot", "pro"}:
             plan = "autopilot"
         if not all([email, first_name, business_name, activity, password]):
             flash("Tous les champs sont obligatoires.", "error")
+        elif not accept_terms:
+            flash("Acceptez les conditions d’utilisation pour créer votre compte.", "error")
         elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
             flash("Saisissez une adresse e-mail valide.", "error")
         elif len(password) < 10:
