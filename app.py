@@ -11,7 +11,7 @@ from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 from werkzeug.middleware.proxy_fix import ProxyFix
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 from auth import auth
 from billing import billing, stripe_ready
 from extensions import limiter
@@ -90,49 +90,6 @@ def load_user(user_id):
 
 with app.app_context():
     db.create_all()
-
-
-@app.post("/internal/account-recovery")
-@csrf.exempt
-@limiter.limit("3 per hour")
-def internal_account_recovery():
-    configured_token = os.getenv("ACCOUNT_RECOVERY_TOKEN", "")
-    configured_email = os.getenv("ACCOUNT_RECOVERY_EMAIL", "").strip().lower()
-    provided_token = request.headers.get("X-Recovery-Token", "")
-    if not configured_token or not provided_token or not hmac.compare_digest(configured_token, provided_token):
-        return jsonify({"error": "not_found"}), 404
-
-    if request.form.get("action") == "discover":
-        accounts = []
-        for candidate in User.query.all():
-            connection = candidate.brand.instagram_connection if candidate.brand else None
-            if connection:
-                accounts.append({
-                    "email": candidate.email,
-                    "first_name": candidate.first_name,
-                    "brand": candidate.brand.business_name,
-                    "instagram_username": connection.username,
-                })
-        return jsonify({"accounts": accounts})
-
-    email = request.form.get("email", "").strip().lower()
-    password = request.form.get("password", "")
-    if not configured_email or email != configured_email:
-        return jsonify({"error": "not_found"}), 404
-    if len(password) < 10 or not any(char.isalpha() for char in password) or not any(char.isdigit() for char in password):
-        return jsonify({"error": "invalid_password"}), 400
-
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({"error": "not_found"}), 404
-    user.password_hash = generate_password_hash(password)
-    db.session.commit()
-    connection = user.brand.instagram_connection if user.brand else None
-    return jsonify({
-        "ok": True,
-        "instagram_connected": bool(connection),
-        "instagram_username": connection.username if connection else "",
-    })
 
 SYSTEM = """Tu es Commercia AI, un stratège éditorial et social media universel.
 Tu adaptes ton intelligence à toute activité, marque, entreprise, organisation ou créateur, quel que soit son secteur.
