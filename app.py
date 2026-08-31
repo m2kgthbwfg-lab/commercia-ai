@@ -13,7 +13,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from auth import auth
 from billing import billing, stripe_ready
 from extensions import limiter
-from instagram_oauth import decrypt_token, instagram, instagram_ready
+from instagram_oauth import connection_health, decrypt_token, instagram, instagram_ready
 from instagram_publisher import publish_photo, run_due_publications
 from models import Campaign, MediaAsset, ScheduledPost, UsageEvent, User, db
 
@@ -193,6 +193,13 @@ def get_automation_status():
         "username": connection.username if connection else "",
         "oauth_configured": instagram_ready(),
     })
+
+
+@app.get("/api/instagram/health")
+@login_required
+@limiter.limit("12 per minute")
+def instagram_health():
+    return jsonify(connection_health(current_user.brand.instagram_connection))
 
 
 @app.post("/api/automation/toggle")
@@ -512,8 +519,6 @@ def latest_campaign():
     return jsonify({"campaign_id": campaign.id, "campaign": campaign.result_json, "status": campaign.status})
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=int(os.getenv("PORT", 5000)),
-        debug=os.getenv("FLASK_DEBUG") == "1",
-    )
+    if os.getenv("RENDER") == "true" and os.getenv("FLASK_DEBUG") != "1":
+        os.execvp("gunicorn", ["gunicorn", "--bind", f"0.0.0.0:{os.getenv('PORT', '10000')}", "--workers", "2", "--timeout", "120", "app:app"])
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 5000)), debug=os.getenv("FLASK_DEBUG") == "1")

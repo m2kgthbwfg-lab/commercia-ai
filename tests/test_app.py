@@ -208,6 +208,21 @@ def test_automation_status_requires_login():
     assert "/login" in response.headers["Location"]
 
 
+def test_instagram_health_requires_login():
+    response = client().get("/api/instagram/health")
+    assert response.status_code == 302
+
+
+def test_instagram_health_reports_missing_connection():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.get("/api/instagram/health")
+    assert response.status_code == 200
+    assert response.get_json()["status"] == "fail"
+    assert response.get_json()["code"] == "not_connected"
+
+
 def test_batch_publish_requires_explicit_confirmation():
     user_id = create_user()
     test_client = client()

@@ -17,6 +17,54 @@ LONG_LIVED_TOKEN_URL = "https://graph.instagram.com/access_token"
 SCOPES = "instagram_business_basic,instagram_business_content_publish"
 
 
+def connection_health(connection):
+    """Verify a stored Instagram connection against the official API."""
+    if not connection:
+        return {"status": "fail", "code": "not_connected", "message": "Aucun compte Instagram connecté."}
+    now = datetime.now(timezone.utc)
+    expires_at = connection.token_expires_at
+    if expires_at and expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at and expires_at <= now:
+        return {"status": "fail", "code": "token_expired", "message": "La connexion Instagram a expiré. Reconnectez le compte."}
+    try:
+        response = requests.get(
+            f"https://graph.instagram.com/{os.getenv('META_GRAPH_VERSION', 'v26.0')}/me",
+            params={
+                "fields": "id,username,account_type,media_count",
+                "access_token": decrypt_token(connection.token_ciphertext),
+            },
+            timeout=20,
+        )
+        payload = response.json()
+        if not response.ok or payload.get("error"):
+            error = payload.get("error", {})
+            return {
+                "status": "fail",
+                "code": "api_rejected",
+                "message": error.get("message", "Instagram refuse actuellement cette connexion."),
+            }
+    except (requests.RequestException, ValueError, RuntimeError):
+        return {"status": "fail", "code": "api_unreachable", "message": "Impossible de vérifier Instagram pour le moment."}
+    days_remaining = None
+    status = "pass"
+    message = "Compte Instagram opérationnel."
+    if expires_at:
+        days_remaining = max(0, (expires_at - now).days)
+        if days_remaining <= 7:
+            status = "warning"
+            message = "La connexion Instagram expire bientôt."
+    return {
+        "status": status,
+        "code": "connected",
+        "message": message,
+        "username": payload.get("username") or connection.username,
+        "account_type": payload.get("account_type", ""),
+        "media_count": payload.get("media_count"),
+        "days_remaining": days_remaining,
+    }
+
+
 def _fernet():
     key = os.getenv("TOKEN_ENCRYPTION_KEY")
     if not key:

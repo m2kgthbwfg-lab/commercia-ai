@@ -162,13 +162,15 @@ async function generate(){
 }
 async function loadAutomationStatus(){
   try{
-    const response=await fetch("/api/automation/status");const status=await response.json();
+    const [statusResponse,healthResponse]=await Promise.all([fetch("/api/automation/status"),fetch("/api/instagram/health")]);
+    const status=await statusResponse.json(),health=await healthResponse.json();
     document.getElementById("autoTime").textContent=status.publish_hour||"18:00";
     document.getElementById("photoCount").textContent=status.photo_count||0;
     const title=document.getElementById("autoTitle"),state=document.getElementById("autoState");
     const toggle=document.getElementById("autoToggle");toggle.hidden=!status.connected;toggle.dataset.enabled=status.enabled?"true":"false";toggle.textContent=status.enabled?"Désactiver le pilote automatique":"Activer le pilote automatique";
-    if(status.enabled&&status.connected){title.textContent="Instagram publie automatiquement";state.innerHTML='<span class="live-dot" style="background:#70efb3"></span>ACTIF'}
-    else if(status.connected){title.textContent="Instagram connecté — activation finale requise";state.innerHTML='<span class="live-dot"></span>SÉCURISÉ'}
+    if(health.status==="fail"&&status.connected){title.textContent=health.message||"Instagram doit être reconnecté";state.innerHTML='<span class="live-dot" style="background:#ff8d83"></span>À CORRIGER'}
+    else if(status.enabled&&status.connected){title.textContent=`@${health.username||status.username} publie automatiquement`;state.innerHTML='<span class="live-dot" style="background:#70efb3"></span>ACTIF · PASS'}
+    else if(status.connected){title.textContent=`@${health.username||status.username} est connecté`;state.innerHTML=`<span class="live-dot"></span>${health.status==="warning"?"WARNING":"PASS"}`}
     else{title.textContent="Connexion Instagram à terminer";state.innerHTML='<span class="live-dot"></span>EN ATTENTE'}
   }catch(_){}
 }
