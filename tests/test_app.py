@@ -223,6 +223,19 @@ def test_instagram_health_reports_missing_connection():
     assert response.get_json()["code"] == "not_connected"
 
 
+def test_calendar_requires_login():
+    assert client().get("/api/calendar").status_code == 302
+
+
+def test_calendar_is_empty_for_a_new_brand():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.get("/api/calendar")
+    assert response.status_code == 200
+    assert response.get_json() == {"posts": []}
+
+
 def test_batch_publish_requires_explicit_confirmation():
     user_id = create_user()
     test_client = client()
