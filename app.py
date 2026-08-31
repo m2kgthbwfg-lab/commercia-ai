@@ -3,13 +3,14 @@ import os, json, hmac
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import cloudinary.uploader
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, Response
 from dotenv import load_dotenv
 from openai import OpenAI
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from sqlalchemy import text
 from werkzeug.middleware.proxy_fix import ProxyFix
+from werkzeug.security import check_password_hash
 from auth import auth
 from billing import billing, stripe_ready
 from extensions import limiter
@@ -136,6 +137,77 @@ def onboarding():
 @app.get("/pricing")
 def pricing():
     return redirect(url_for("index", _anchor="tarifs"))
+
+
+def legal_identity():
+    return {
+        "name": os.getenv("LEGAL_NAME", "Commercia AI"),
+        "legal_form": os.getenv("LEGAL_FORM", ""),
+        "registration": os.getenv("LEGAL_REGISTRATION", ""),
+        "address": os.getenv("LEGAL_ADDRESS", ""),
+        "email": os.getenv("LEGAL_EMAIL", "contact@commercia-ai.fr"),
+        "director": os.getenv("LEGAL_DIRECTOR", ""),
+        "host": "Render Services, Inc., 525 Brannan Street, Suite 300, San Francisco, CA 94107, États-Unis",
+    }
+
+
+@app.get("/mentions-legales")
+def legal_notice():
+    return render_template("legal.html", page="mentions", legal=legal_identity())
+
+
+@app.get("/confidentialite")
+def privacy_policy():
+    return render_template("legal.html", page="privacy", legal=legal_identity())
+
+
+@app.get("/conditions")
+def terms_of_service():
+    return render_template("legal.html", page="terms", legal=legal_identity())
+
+
+@app.get("/account")
+@login_required
+def account_settings():
+    return render_template("account.html", user=current_user, brand=current_user.brand)
+
+
+@app.get("/account/export")
+@login_required
+def export_account():
+    brand = current_user.brand
+    payload = {
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "user": {"email": current_user.email, "first_name": current_user.first_name, "plan": current_user.selected_plan, "subscription_status": current_user.subscription_status},
+        "brand": {column.name: getattr(brand, column.name) for column in brand.__table__.columns if column.name not in {"id", "user_id"}},
+        "campaigns": [{"created_at": campaign.created_at.isoformat(), "status": campaign.status, "brief": campaign.brief_json, "result": campaign.result_json} for campaign in Campaign.query.filter_by(brand_id=brand.id).order_by(Campaign.created_at).all()],
+        "publications": [{"scheduled_at": post.scheduled_at.isoformat(), "published_at": post.published_at.isoformat() if post.published_at else None, "status": post.status, "caption": post.caption, "media_url": post.media_url, "instagram_media_id": post.meta_media_id} for post in ScheduledPost.query.filter_by(brand_id=brand.id).order_by(ScheduledPost.created_at).all()],
+    }
+    return Response(json.dumps(payload, ensure_ascii=False, indent=2, default=str), mimetype="application/json", headers={"Content-Disposition": "attachment; filename=commercia-export.json"})
+
+
+@app.post("/account/delete")
+@login_required
+@limiter.limit("3 per hour")
+def delete_account():
+    if current_user.subscription_status in {"active", "past_due", "unpaid"}:
+        flash("Résiliez d’abord votre abonnement depuis le portail de facturation.", "error")
+        return redirect(url_for("account_settings"))
+    if request.form.get("confirmation", "").strip() != "SUPPRIMER" or not check_password_hash(current_user.password_hash, request.form.get("password", "")):
+        flash("Confirmation ou mot de passe incorrect.", "error")
+        return redirect(url_for("account_settings"))
+    user = current_user._get_current_object()
+    for asset in list(user.brand.media_assets):
+        try:
+            cloudinary.uploader.destroy(asset.public_id, invalidate=True)
+        except Exception:
+            app.logger.exception("Suppression Cloudinary impossible pour %s", asset.public_id)
+    Campaign.query.filter_by(brand_id=user.brand.id).delete(synchronize_session=False)
+    UsageEvent.query.filter_by(user_id=user.id).delete(synchronize_session=False)
+    db.session.delete(user)
+    db.session.commit()
+    flash("Votre compte et ses données ont été supprimés.", "success")
+    return redirect(url_for("index"))
 
 
 @app.get("/health")
