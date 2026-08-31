@@ -91,6 +91,43 @@ def test_workspace_is_personalized():
     assert response.status_code == 200
     assert b"Bonjour Malek" in response.data
     assert b"Sur un Plateau" in response.data
+    assert "Centre multi-réseaux".encode() in response.data
+
+
+def test_social_status_is_truthful():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.get("/api/social/status")
+    assert response.status_code == 200
+    payload = response.get_json()
+    assert len(payload["platforms"]) == 8
+    instagram = next(item for item in payload["platforms"] if item["id"] == "instagram")
+    linkedin = next(item for item in payload["platforms"] if item["id"] == "linkedin")
+    assert instagram["connected"] is False
+    assert instagram["status"] == "ready_to_connect"
+    assert linkedin["status"] == "authorization_required"
+
+
+def test_commercia_pilot_requires_confirmation():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    assert test_client.post("/api/pilot/activate", json={}).status_code == 400
+
+
+def test_commercia_pilot_configures_internal_client():
+    user_id = create_user()
+    test_client = client()
+    login_test_client(test_client, user_id)
+    response = test_client.post("/api/pilot/activate", json={"confirmation": "ACTIVER COMMERCIA"})
+    assert response.status_code == 200
+    with commercia.app.app_context():
+        user = db.session.get(User, user_id)
+        assert user.selected_plan == "pilot"
+        assert user.subscription_status == "internal_pilot"
+        assert user.brand.business_name == "Commercia AI"
+        assert "universelle" in user.brand.activity
 
 
 def test_health_reports_configuration(monkeypatch):
