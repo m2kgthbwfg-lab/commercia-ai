@@ -7,13 +7,22 @@
   <meta name="description" content="Commercia AI transforme vos intentions en contenus créés, programmés et publiés sur vos réseaux sociaux.">
   <title>Commercia AI — De l'intention à l'action</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='figma-site.css') }}">
+  <style>.public-mobile-nav{display:none}@media(max-width:1023px){.public-mobile-nav{position:fixed;z-index:80;left:10px;right:10px;bottom:10px;display:flex;gap:3px;overflow-x:auto;padding:7px;background:rgba(10,11,14,.94);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(18px)}.public-mobile-nav a{flex:0 0 auto;padding:9px 10px;color:#a6a6ad;text-decoration:none;font:500 11px/1 Inter,system-ui,sans-serif}.public-mobile-nav a:hover,.public-mobile-nav a:focus{color:#d3ad68}}</style>
 </head>
 <body>
   <div id="root"></div>
+  <nav class="public-mobile-nav" aria-label="Navigation principale mobile"><a href="/produit">Produit</a><a href="/solutions">Solutions</a><a href="/integrations">Intégrations</a><a href="/tarifs">Tarifs</a><a href="/ressources">Aide</a></nav>
   <script type="module" src="{{ url_for('static', filename='figma-site.js') }}"></script>
   <script>
     (() => {
       const routes = {
+        "Produit": "/produit",
+        "Solutions": "/solutions",
+        "Intégrations": "/integrations",
+        "Tarifs": "/tarifs",
+        "Ressources": "/ressources",
+        "Voir en action": "/produit",
+        "Découvrir le système": "/produit",
         "Connexion": "/login",
         "Essayer gratuitement": "/signup?plan=autopilot",
         "Essayer Commercia": "/signup?plan=autopilot",
