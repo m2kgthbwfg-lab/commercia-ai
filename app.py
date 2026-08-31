@@ -108,6 +108,99 @@ pinterest, threads et x. Chaque valeur est un objet {angle, format, copy, cta} r
 aux usages du réseau ; ne recopie pas le même texte partout.
 """
 
+PUBLIC_PAGES = {
+    "produit": {
+        "eyebrow": "La plateforme",
+        "title": "De votre identité de marque à une semaine de contenus prête à publier.",
+        "lead": "Commercia réunit la stratégie, la création, l’organisation, la validation et la publication dans un espace unique qui s’adapte à chaque activité.",
+        "sections": [
+            {"title": "Intelligence de marque", "text": "Votre secteur, votre audience, votre ton, vos offres et vos règles sont mémorisés pour personnaliser chaque campagne."},
+            {"title": "Création multi-format", "text": "Publications, Reels, Stories, calendriers et adaptations propres à chaque réseau sont générés à partir d’un même brief."},
+            {"title": "Calendrier et validation", "text": "Vous relisez, téléchargez, copiez ou programmez les contenus. Le mode automatique ne s’active qu’après votre accord explicite."},
+            {"title": "Publication vérifiable", "text": "Une publication est affichée comme publiée uniquement après confirmation de l’API du réseau concerné."},
+        ],
+        "note": "Le produit fonctionne aujourd’hui avec la génération IA, la bibliothèque média, le calendrier et la publication Instagram pour les comptes autorisés.",
+    },
+    "solutions": {
+        "eyebrow": "Pour chaque activité",
+        "title": "Une seule plateforme, personnalisée pour votre réalité.",
+        "lead": "Commercia n’impose pas une méthode réservée à un métier. Son moteur adapte les angles, les formats et les objectifs au profil détecté.",
+        "sections": [
+            {"title": "Indépendants et experts", "text": "Conseils, preuves d’expertise, offres, prises de parole et contenus destinés à générer des demandes qualifiées."},
+            {"title": "Marques et e-commerce", "text": "Lancements, produits, campagnes, démonstrations, contenus de conversion et animation de communauté."},
+            {"title": "Entreprises et services B2B", "text": "Expertise, marque employeur, cas clients, actualités, génération de leads et communication institutionnelle."},
+            {"title": "Créateurs et organisations", "text": "Actualités, créations, collaborations, événements, mobilisation de communauté et storytelling."},
+        ],
+        "note": "Restaurant, immobilier, coaching, art, association, santé appropriée, sport ou éducation : l’interface reste la même, l’intelligence s’adapte.",
+    },
+    "integrations": {
+        "eyebrow": "Connexions officielles",
+        "title": "Des intégrations utiles, avec un état toujours transparent.",
+        "lead": "Commercia distingue clairement les connexions actives, les services techniques et les réseaux encore en attente d’autorisation.",
+        "sections": [
+            {"title": "Instagram · disponible", "text": "Connexion OAuth officielle Meta, bibliothèque média, programmation et confirmation réelle de publication pour les comptes autorisés."},
+            {"title": "OpenAI · actif", "text": "Génération de stratégies, calendriers et contenus adaptés à l’identité et aux objectifs de chaque utilisateur."},
+            {"title": "Cloudinary · actif", "text": "Stockage privé et optimisation des visuels ajoutés par chaque espace client."},
+            {"title": "Facebook, LinkedIn, TikTok, YouTube, Pinterest, Threads et X", "text": "Les adaptations de contenu et les exports sont disponibles. La publication directe nécessite encore l’autorisation API propre à chaque plateforme."},
+        ],
+        "note": "Commercia ne présente jamais une plateforme comme connectée tant que son API n’a pas confirmé l’autorisation.",
+    },
+    "tarifs": {
+        "eyebrow": "Accès pilote",
+        "title": "Essayez Commercia pendant 7 jours, sans carte bancaire.",
+        "lead": "Créez un espace indépendant, renseignez votre marque et testez le parcours réel avant l’ouverture des abonnements payants.",
+        "sections": [
+            {"title": "Compte personnel", "text": "Votre ami crée son propre compte : il ne voit ni vos contenus, ni vos médias, ni vos réglages."},
+            {"title": "Campagnes IA", "text": "Création de campagnes personnalisées pendant l’essai, avec calendrier et adaptations multi-réseaux."},
+            {"title": "Bibliothèque et planning", "text": "Ajout de vrais visuels, téléchargement des textes et programmation depuis son espace."},
+            {"title": "Aucun paiement aujourd’hui", "text": "La facturation n’est pas encore activée. Aucun prélèvement ne peut être réalisé pendant cette phase pilote."},
+        ],
+        "note": "L’accès pilote sert à tester le produit réel. Les offres payantes seront affichées uniquement lorsque la facturation sera opérationnelle.",
+    },
+    "ressources": {
+        "eyebrow": "Centre d’aide",
+        "title": "Les étapes pour réussir votre premier essai.",
+        "lead": "Un parcours simple pour passer de la création du compte à une première campagne exploitable.",
+        "sections": [
+            {"title": "1. Créer votre espace", "text": "Utilisez une adresse e-mail personnelle et un mot de passe d’au moins 10 caractères avec une lettre et un chiffre."},
+            {"title": "2. Décrire votre marque", "text": "Complétez l’activité, l’audience, les offres, le ton et l’objectif. Ces réponses alimentent l’intelligence de marque."},
+            {"title": "3. Ajouter vos visuels", "text": "Importez des fichiers JPG, PNG ou WebP dont vous possédez les droits."},
+            {"title": "4. Générer et relire", "text": "Préparez une campagne, contrôlez les textes puis copiez, téléchargez ou programmez selon les fonctions autorisées."},
+        ],
+        "note": "Besoin d’aide pendant le pilote ? Écrivez à contact@commercia-ai.fr en indiquant l’adresse utilisée pour le compte.",
+    },
+}
+
+
+def render_public_page(page_key):
+    return render_template("public_page.html", page=PUBLIC_PAGES[page_key], current_page=page_key)
+
+
+@app.get("/produit")
+def product_page():
+    return render_public_page("produit")
+
+
+@app.get("/solutions")
+def solutions_page():
+    return render_public_page("solutions")
+
+
+@app.get("/integrations")
+def integrations_page():
+    return render_public_page("integrations")
+
+
+@app.get("/tarifs")
+def pricing_page():
+    return render_public_page("tarifs")
+
+
+@app.get("/ressources")
+def resources_page():
+    return render_public_page("ressources")
+
+
 @app.get("/")
 def index():
     return render_template("landing.html")
@@ -217,7 +310,7 @@ def onboarding():
 
 @app.get("/pricing")
 def pricing():
-    return redirect(url_for("index", _anchor="tarifs"))
+    return redirect(url_for("pricing_page"))
 
 
 def legal_identity():

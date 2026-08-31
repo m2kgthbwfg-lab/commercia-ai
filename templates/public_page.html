@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0a0b0e">
+  <meta name="description" content="{{ page.lead }}">
+  <title>{{ page.title }} · Commercia AI</title>
+  <style>
+    @import url('https://api.fontshare.com/v2/css?f[]=satoshi@700,500,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+    :root{--night:#0a0b0e;--panel:#0f1117;--white:#f6f6f2;--muted:#92939c;--line:rgba(255,255,255,.12);--gold:#c8a15a;--mint:#47c5a0}*{box-sizing:border-box}html{background:var(--night);color-scheme:dark;scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 78% 12%,rgba(200,161,90,.08),transparent 28%),var(--night);color:var(--white);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit}.top{position:sticky;top:0;z-index:20;min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px max(22px,calc((100% - 1180px)/2));background:rgba(10,11,14,.93);border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}.logo{display:flex;align-items:center;gap:14px;font:500 20px/1 Satoshi,system-ui,sans-serif;text-decoration:none}.mark{color:var(--gold);font-size:27px}.nav{display:flex;align-items:center;gap:24px}.nav a{color:var(--muted);font-size:13px;text-decoration:none}.nav a:hover,.nav a.active{color:var(--gold)}.nav .login{padding:10px 14px;border:1px solid var(--line);color:var(--white)}main{width:min(1180px,calc(100% - 34px));margin:auto;padding:clamp(70px,10vw,130px) 0 90px}.eyebrow{font:500 10px/1 "JetBrains Mono",monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}h1,h2{font-family:Satoshi,system-ui,sans-serif;letter-spacing:-.035em}h1{max-width:950px;margin:20px 0;font-size:clamp(46px,8vw,92px);font-weight:500;line-height:.96}.lead{max-width:780px;color:var(--muted);font-size:clamp(17px,2vw,22px);line-height:1.55}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}.button{display:inline-flex;min-height:48px;align-items:center;padding:0 18px;background:var(--gold);color:var(--night);font-weight:600;text-decoration:none}.button.secondary{background:transparent;color:var(--white);border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:72px}.card{min-height:210px;padding:28px;background:linear-gradient(135deg,rgba(200,161,90,.045),transparent 45%),var(--panel);border:1px solid var(--line)}.card-index{font:500 10px/1 "JetBrains Mono",monospace;color:var(--gold)}.card h2{margin:42px 0 12px;font-size:28px;font-weight:500}.card p{margin:0;color:var(--muted);line-height:1.65}.note{margin-top:12px;padding:22px;border:1px solid rgba(71,197,160,.24);background:rgba(71,197,160,.055);color:#b8e8d9;line-height:1.6}.footer{display:flex;justify-content:space-between;gap:24px;padding:28px max(22px,calc((100% - 1180px)/2));border-top:1px solid var(--line);color:var(--muted);font-size:12px}.footer-links{display:flex;gap:18px;flex-wrap:wrap}.footer a{text-decoration:none}.footer a:hover{color:var(--gold)}@media(max-width:880px){.top{align-items:flex-start}.nav{max-width:70%;overflow-x:auto;padding-bottom:5px}.nav .login{display:none}.grid{grid-template-columns:1fr}.card{min-height:180px}h1{font-size:clamp(44px,13vw,72px)}}@media(max-width:580px){.top{display:block}.logo{margin-bottom:16px}.nav{max-width:100%;gap:18px}.nav a{flex:0 0 auto}.footer{display:block}.footer-links{margin-top:14px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="logo" href="/"><span class="mark">A</span>Commercia AI</a>
+    <nav class="nav" aria-label="Navigation principale">
+      <a class="{{ 'active' if current_page == 'produit' }}" href="/produit">Produit</a>
+      <a class="{{ 'active' if current_page == 'solutions' }}" href="/solutions">Solutions</a>
+      <a class="{{ 'active' if current_page == 'integrations' }}" href="/integrations">Intégrations</a>
+      <a class="{{ 'active' if current_page == 'tarifs' }}" href="/tarifs">Tarifs</a>
+      <a class="{{ 'active' if current_page == 'ressources' }}" href="/ressources">Ressources</a>
+      <a class="login" href="/login">Connexion</a>
+    </nav>
+  </header>
+  <main>
+    <div class="eyebrow">{{ page.eyebrow }}</div>
+    <h1>{{ page.title }}</h1>
+    <p class="lead">{{ page.lead }}</p>
+    <div class="actions"><a class="button" href="/signup?plan=autopilot">Créer mon espace gratuitement</a><a class="button secondary" href="/login">J’ai déjà un compte</a></div>
+    <section class="grid">{% for section in page.sections %}<article class="card"><div class="card-index">0{{ loop.index }}</div><h2>{{ section.title }}</h2><p>{{ section.text }}</p></article>{% endfor %}</section>
+    <aside class="note">{{ page.note }}</aside>
+  </main>
+  <footer class="footer"><span>© 2026 Commercia AI</span><div class="footer-links"><a href="/mentions-legales">Mentions légales</a><a href="/confidentialite">Confidentialité</a><a href="/conditions">Conditions</a><a href="mailto:contact@commercia-ai.fr">Contact</a></div></footer>
+</body>
+</html>
